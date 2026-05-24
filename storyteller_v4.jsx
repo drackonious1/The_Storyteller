@@ -328,8 +328,8 @@ const css = `
 .limit-body { font-size: 14px; color: var(--mt); opacity: 0.55; font-style: italic; line-height: 1.75; max-width: 280px; }
 `;
 
-function storageGet(k) { return window.storage.get(k).then(r => r ? JSON.parse(r.value) : null).catch(() => null); }
-function storageSet(k, v) { return window.storage.set(k, JSON.stringify(v)).catch(() => null); }
+function storageGet(k) { try { const v = localStorage.getItem(k); return Promise.resolve(v ? JSON.parse(v) : null); } catch(e) { return Promise.resolve(null); } }
+function storageSet(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return Promise.resolve(true); } catch(e) { return Promise.resolve(null); } }
 function todayKey() { return new Date().toISOString().slice(0, 10); }
 
 export default function App() {
