@@ -1,2 +1,3 @@
 # The_Storyteller
-Mystical Fantasy Storyteller App
+A Mystical Fantasy Storyteller App For Dreamers of all ages.
+Built By Drackonious
