@@ -13,7 +13,7 @@ const FIREFLIES = Array.from({ length: 22 }, (_, i) => ({
 const MODES = {
   kids: {
     primary: "#FFB800", glow: "rgba(255,184,0,0.55)", subtle: "rgba(255,184,0,0.12)",
-    text: "#FFE090", bg: "#241400", border: "rgba(255,184,0,0.4)",
+    text: "#FFE090", bg: "#2e1800", border: "rgba(255,184,0,0.4)",
     teller: "The Gentle Dreamer", sub: "✨ warm tales for young hearts ✨",
     badge: "Young Hearts", btnLabel: "✨  Begin the Adventure  ✨",
     contLabel: "✨  Continue the Adventure  ✨",
@@ -23,7 +23,7 @@ const MODES = {
   },
   older: {
     primary: "#7B2FFF", glow: "rgba(123,47,255,0.55)", subtle: "rgba(123,47,255,0.12)",
-    text: "#D4B0FF", bg: "#130a28", border: "rgba(123,47,255,0.4)",
+    text: "#D4B0FF", bg: "#1a0f35", border: "rgba(123,47,255,0.4)",
     teller: "The Ancient Whisperer", sub: "✦ tales from the edge of worlds ✦",
     badge: "Mystic", btnLabel: "✦  Awaken the Story  ✦",
     contLabel: "✦  Weave the Tale Further  ✦",
@@ -33,7 +33,7 @@ const MODES = {
   },
   family: {
     primary: "#00D98B", glow: "rgba(0,217,139,0.55)", subtle: "rgba(0,217,139,0.12)",
-    text: "#90FFD8", bg: "#0c1f15", border: "rgba(0,217,139,0.4)",
+    text: "#90FFD8", bg: "#0f2a1a", border: "rgba(0,217,139,0.4)",
     teller: "The Hearthkeeper", sub: "🌿 stories of family, bond and belonging 🌿",
     badge: "Family", btnLabel: "🌿  Begin the Family Tale  🌿",
     contLabel: "🌿  Continue the Journey  🌿",
@@ -57,7 +57,6 @@ const TIERS = {
   full:     { name: "Full",     price: "$25", period: "/month", stories: 3,  daily: true  },
 };
 
-// Promo codes — DRACKO unlocks full for owner/testing, BETA10 for beta testers
 const PROMO_CODES = {
   "DRACKO":    { tier: "full",     msg: "Welcome home, creator ✦ Full realm unlocked!" },
   "DRACKO25":  { tier: "full",     msg: "Welcome home, creator ✦ Full realm unlocked!" },
@@ -73,189 +72,55 @@ const TIER_PERKS = {
 
 const css = `
 * { box-sizing: border-box; margin: 0; padding: 0; }
-
-.app {
-  background: var(--bg, #070412);
-  min-height: 640px;
-  display: flex;
-  flex-direction: column;
-  border-radius: 18px;
-  overflow: hidden;
-  font-family: Georgia,'Book Antiqua',Palatino,serif;
-  color: var(--mt, #C4A0FF);
-  transition: background 0.6s ease;
-  position: relative;
-}
-
+.app { background: var(--bg, #070412); min-height: 640px; display: flex; flex-direction: column; border-radius: 18px; overflow: hidden; font-family: Georgia,'Book Antiqua',Palatino,serif; color: var(--mt, #C4A0FF); transition: background 0.6s ease; position: relative; }
 .screen { display: flex; flex-direction: column; flex: 1; animation: fadein 0.45s ease; }
 @keyframes fadein { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
-
-/* FIREFLIES */
-.ff {
-  position: absolute;
-  border-radius: 50%;
-  background: var(--mp, #7B2FFF);
-  box-shadow: 0 0 6px 2px var(--mg, rgba(123,47,255,0.55));
-  animation: ffloat var(--fd) ease-in-out infinite var(--fdl), fftw var(--ftw) ease-in-out infinite;
-  pointer-events: none;
-  z-index: 0;
-}
+.ff { position: absolute; border-radius: 50%; background: var(--mp, #7B2FFF); box-shadow: 0 0 6px 2px var(--mg, rgba(123,47,255,0.55)); animation: ffloat var(--fd) ease-in-out infinite var(--fdl), fftw var(--ftw) ease-in-out infinite; pointer-events: none; z-index: 0; }
 @keyframes fftw { 0%,100%{opacity:0.1} 40%{opacity:0.85} 60%{opacity:0.95} }
 @keyframes ffloat { 0%,100%{transform:translateY(0px) translateX(0px)} 50%{transform:translateY(var(--fy,-8px)) translateX(var(--fx,5px))} }
-
-/* ORB */
 .orb-wrap { position: relative; width: 110px; height: 110px; display: flex; align-items: center; justify-content: center; }
-.orb {
-  border-radius: 50%;
-  animation: orbpulse 3.5s ease-in-out infinite;
-}
-.orb-ring {
-  position: absolute; inset: 0; border-radius: 50%;
-  border: 1.5px solid var(--mg, rgba(123,47,255,0.5));
-  animation: orbring 3.5s ease-in-out infinite;
-}
-.orb-ring2 {
-  position: absolute; inset: -10px; border-radius: 50%;
-  border: 1px solid var(--mg, rgba(123,47,255,0.25));
-  animation: orbring 3.5s ease-in-out infinite 0.4s;
-}
-@keyframes orbpulse {
-  0%,100% { transform:scale(1); box-shadow: 0 0 24px 4px var(--mg), 0 0 60px 10px var(--ms); }
-  50%      { transform:scale(1.08); box-shadow: 0 0 40px 8px var(--mg), 0 0 90px 18px var(--ms); }
-}
-@keyframes orbring {
-  0%,100% { transform:scale(1); opacity:0.7; }
-  50%     { transform:scale(1.3); opacity:0.08; }
-}
-
-/* CRYSTAL DIVIDER */
-.crystal-div {
-  text-align: center;
-  color: var(--mp);
-  letter-spacing: 8px;
-  font-size: 14px;
-  margin: 18px 0 22px;
-  filter: drop-shadow(0 0 6px var(--mp));
-}
-
-/* GLOW TEXT */
-.glow-title {
-  font-size: 20px; letter-spacing: 3px; text-transform: uppercase;
-  color: var(--mp);
-  text-shadow: 0 0 12px var(--mg), 0 0 28px var(--ms);
-}
+.orb { border-radius: 50%; animation: orbpulse 3.5s ease-in-out infinite; }
+.orb-ring { position: absolute; inset: 0; border-radius: 50%; border: 1.5px solid var(--mg, rgba(123,47,255,0.5)); animation: orbring 3.5s ease-in-out infinite; }
+.orb-ring2 { position: absolute; inset: -10px; border-radius: 50%; border: 1px solid var(--mg, rgba(123,47,255,0.25)); animation: orbring 3.5s ease-in-out infinite 0.4s; }
+@keyframes orbpulse { 0%,100% { transform:scale(1); box-shadow: 0 0 24px 4px var(--mg), 0 0 60px 10px var(--ms); } 50% { transform:scale(1.08); box-shadow: 0 0 40px 8px var(--mg), 0 0 90px 18px var(--ms); } }
+@keyframes orbring { 0%,100% { transform:scale(1); opacity:0.7; } 50% { transform:scale(1.3); opacity:0.08; } }
+.crystal-div { text-align: center; color: var(--mp); letter-spacing: 8px; font-size: 14px; margin: 18px 0 22px; filter: drop-shadow(0 0 6px var(--mp)); }
+.glow-title { font-size: 20px; letter-spacing: 3px; text-transform: uppercase; color: var(--mp); text-shadow: 0 0 12px var(--mg), 0 0 28px var(--ms); }
 .glow-sub { font-size: 12px; font-style: italic; color: var(--mt); opacity: 0.7; letter-spacing: 1px; }
-
-/* BUTTONS */
-.btn-glow {
-  background: linear-gradient(135deg, rgba(0,0,0,0.4), var(--ms));
-  border: 1.5px solid var(--mp);
-  box-shadow: 0 0 14px var(--mg), inset 0 0 10px var(--ms);
-  color: var(--mt);
-  padding: 14px 20px; border-radius: 12px;
-  font-family: Georgia,serif; font-size: 13px; letter-spacing: 2px; text-transform: uppercase;
-  cursor: pointer; transition: all 0.25s; width: 100%;
-  text-shadow: 0 0 8px var(--mg);
-}
-.btn-glow:hover:not(:disabled) {
-  box-shadow: 0 0 24px var(--mg), 0 0 50px var(--ms), inset 0 0 16px var(--ms);
-  transform: translateY(-2px);
-}
+.btn-glow { background: linear-gradient(135deg, rgba(0,0,0,0.4), var(--ms)); border: 1.5px solid var(--mp); box-shadow: 0 0 14px var(--mg), inset 0 0 10px var(--ms); color: var(--mt); padding: 14px 20px; border-radius: 12px; font-family: Georgia,serif; font-size: 13px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: all 0.25s; width: 100%; text-shadow: 0 0 8px var(--mg); }
+.btn-glow:hover:not(:disabled) { box-shadow: 0 0 24px var(--mg), 0 0 50px var(--ms), inset 0 0 16px var(--ms); transform: translateY(-2px); }
 .btn-glow:active:not(:disabled) { transform: scale(0.98); }
 .btn-glow:disabled { opacity: 0.3; cursor: not-allowed; }
-
-.btn-outline-glow {
-  background: transparent;
-  border: 1px solid var(--border, rgba(123,47,255,0.35));
-  color: var(--mt); opacity: 0.7;
-  padding: 12px 20px; border-radius: 12px;
-  font-family: Georgia,serif; font-size: 12px; letter-spacing: 2px; text-transform: uppercase;
-  cursor: pointer; transition: all 0.25s; width: 100%;
-}
-.btn-outline-glow:hover {
-  border-color: var(--mp);
-  box-shadow: 0 0 12px var(--ms);
-  opacity: 1;
-}
-.btn-ghost {
-  background: none; border: none;
-  color: var(--mt); opacity: 0.45;
-  font-family: Georgia,serif; font-size: 12px; cursor: pointer;
-  padding: 0; letter-spacing: 1px; transition: all 0.2s;
-}
+.btn-outline-glow { background: transparent; border: 1px solid var(--border, rgba(123,47,255,0.35)); color: var(--mt); opacity: 0.7; padding: 12px 20px; border-radius: 12px; font-family: Georgia,serif; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: all 0.25s; width: 100%; }
+.btn-outline-glow:hover { border-color: var(--mp); box-shadow: 0 0 12px var(--ms); opacity: 1; }
+.btn-ghost { background: none; border: none; color: var(--mt); opacity: 0.45; font-family: Georgia,serif; font-size: 12px; cursor: pointer; padding: 0; letter-spacing: 1px; transition: all 0.2s; }
 .btn-ghost:hover { opacity: 0.9; text-shadow: 0 0 8px var(--mg); }
-.btn-sm {
-  flex: 1; background: var(--ms); border: 1px solid var(--border);
-  color: var(--mt); padding: 10px 8px; border-radius: 10px;
-  font-family: Georgia,serif; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase;
-  cursor: pointer; transition: all 0.2s;
-}
+.btn-sm { flex: 1; background: var(--ms); border: 1px solid var(--border); color: var(--mt); padding: 10px 8px; border-radius: 10px; font-family: Georgia,serif; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; cursor: pointer; transition: all 0.2s; }
 .btn-sm:hover:not(:disabled) { box-shadow: 0 0 10px var(--ms); border-color: var(--mp); }
 .btn-sm:disabled { opacity: 0.25; cursor: not-allowed; }
-
-/* SPLASH */
-.splash {
-  align-items: center; justify-content: center;
-  min-height: 640px; padding: 36px 24px; gap: 18px; text-align: center;
-  position: relative; overflow: hidden; z-index: 1;
-}
+.splash { align-items: center; justify-content: center; min-height: 640px; padding: 36px 24px; gap: 18px; text-align: center; position: relative; overflow: hidden; z-index: 1; }
 .splash-body { font-size: 14px; font-style: italic; line-height: 1.75; max-width: 280px; color: var(--mt); opacity: 0.6; }
 .splash-actions { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 300px; }
 .splash-note { font-size: 11px; color: var(--mt); opacity: 0.3; font-style: italic; }
-
-/* MODE SELECTOR */
 .mode-sel { display: flex; gap: 6px; padding: 0 18px; margin-top: 10px; }
-.mode-btn {
-  flex: 1; padding: 8px 4px; border-radius: 10px;
-  font-family: Georgia,serif; font-size: 10px; letter-spacing: 1px; text-transform: uppercase;
-  cursor: pointer; transition: all 0.3s; border: 1px solid transparent;
-  background: rgba(255,255,255,0.04);
-  color: rgba(255,255,255,0.35);
-}
-.mode-btn.active {
-  border-color: var(--mp);
-  background: var(--ms);
-  color: var(--mt);
-  box-shadow: 0 0 12px var(--ms);
-  text-shadow: 0 0 8px var(--mg);
-}
+.mode-btn { flex: 1; padding: 8px 4px; border-radius: 10px; font-family: Georgia,serif; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; transition: all 0.3s; border: 1px solid transparent; background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.35); }
+.mode-btn.active { border-color: var(--mp); background: var(--ms); color: var(--mt); box-shadow: 0 0 12px var(--ms); text-shadow: 0 0 8px var(--mg); }
 .mode-btn:hover:not(.active) { border-color: rgba(255,255,255,0.2); color: rgba(255,255,255,0.6); }
-
-/* AUTH */
 .auth-wrap { flex: 1; padding: 22px 22px; display: flex; flex-direction: column; gap: 14px; position: relative; z-index: 1; }
 .auth-tabs { display: flex; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
 .auth-tab { flex: 1; padding: 10px; background: none; border: none; color: var(--mt); opacity: 0.45; font-family: Georgia,serif; font-size: 12px; cursor: pointer; letter-spacing: 1.5px; text-transform: uppercase; transition: all 0.2s; }
 .auth-tab.active { background: var(--ms); opacity: 1; box-shadow: inset 0 0 12px var(--ms); }
 .field { display: flex; flex-direction: column; gap: 5px; }
 .field label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--mt); opacity: 0.5; }
-.field input {
-  background: rgba(255,255,255,0.05);
-  border: 1px solid var(--border); border-radius: 8px;
-  padding: 11px 13px; color: var(--mt);
-  font-family: Georgia,serif; font-size: 14px;
-  outline: none; transition: all 0.2s;
-}
+.field input { background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 8px; padding: 11px 13px; color: var(--mt); font-family: Georgia,serif; font-size: 14px; outline: none; transition: all 0.2s; }
 .field input:focus { border-color: var(--mp); box-shadow: 0 0 10px var(--ms); }
 .field input::placeholder { color: var(--mt); opacity: 0.2; }
 .msg-err { color: #ff7a7a; font-size: 12px; font-style: italic; text-align: center; }
 .msg-ok  { color: #7FFFCF; font-size: 12px; font-style: italic; text-align: center; }
-
-/* HEADER */
-.hdr {
-  position: relative; padding: 16px 18px 10px; text-align: center;
-  border-bottom: 1px solid var(--border);
-  background: linear-gradient(180deg, rgba(0,0,0,0.7) 0%, transparent 100%);
-  overflow: hidden; z-index: 2;
-}
-.hdr::after {
-  content: ''; position: absolute; bottom: 0; left: 10%; right: 10%; height: 1px;
-  background: linear-gradient(90deg, transparent, var(--mp), transparent);
-  opacity: 0.6;
-}
+.hdr { position: relative; padding: 16px 18px 10px; text-align: center; border-bottom: 1px solid var(--border); background: linear-gradient(180deg, rgba(0,0,0,0.7) 0%, transparent 100%); overflow: hidden; z-index: 2; }
+.hdr::after { content: ''; position: absolute; bottom: 0; left: 10%; right: 10%; height: 1px; background: linear-gradient(90deg, transparent, var(--mp), transparent); opacity: 0.6; }
 .hdr-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
 .hdr-user { font-size: 11px; color: var(--mt); opacity: 0.5; font-style: italic; }
-
-/* USAGE */
 .usage-wrap { padding: 8px 18px 4px; position: relative; z-index: 1; }
 .usage-row { display: flex; justify-content: space-between; margin-bottom: 4px; }
 .usage-lbl { font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--mt); opacity: 0.35; }
@@ -264,24 +129,15 @@ const css = `
 .usage-fill { height: 100%; background: var(--mp); border-radius: 2px; transition: width 0.6s; box-shadow: 0 0 6px var(--mg); }
 .upgrade-nudge { font-size: 10px; color: var(--mp); text-align: right; margin-top: 4px; cursor: pointer; opacity: 0.8; letter-spacing: 0.5px; }
 .upgrade-nudge:hover { opacity: 1; text-shadow: 0 0 8px var(--mg); }
-
-/* HOME BODY */
 .home-body { flex: 1; overflow-y: auto; padding: 12px 18px; position: relative; z-index: 1; }
 .section-lbl { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--mt); opacity: 0.3; margin-bottom: 10px; margin-top: 4px; }
-.story-card {
-  background: rgba(255,255,255,0.03);
-  border: 1px solid var(--border); border-radius: 12px;
-  padding: 13px 15px; margin-bottom: 10px; cursor: pointer;
-  transition: all 0.25s;
-}
+.story-card { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 12px; padding: 13px 15px; margin-bottom: 10px; cursor: pointer; transition: all 0.25s; }
 .story-card:hover { border-color: var(--mp); box-shadow: 0 0 16px var(--ms); background: var(--ms); }
 .card-title { font-size: 14px; color: var(--mt); margin-bottom: 3px; text-shadow: 0 0 8px var(--ms); }
 .card-preview { font-size: 12px; color: var(--mt); opacity: 0.45; font-style: italic; margin-top: 5px; line-height: 1.5; }
 .card-meta { font-size: 10px; color: var(--mt); opacity: 0.28; margin-top: 4px; }
 .badge { display: inline-block; font-size: 9px; letter-spacing: 1px; text-transform: uppercase; padding: 2px 8px; border-radius: 4px; margin-bottom: 5px; border: 1px solid var(--border); background: var(--ms); color: var(--mp); box-shadow: 0 0 6px var(--ms); }
 .empty { text-align: center; padding: 32px 20px; font-style: italic; color: var(--mt); opacity: 0.28; font-size: 13px; line-height: 1.8; }
-
-/* STORY */
 .story-scroll { flex: 1; overflow-y: auto; min-height: 300px; max-height: 420px; scrollbar-width: thin; scrollbar-color: var(--mp) transparent; position: relative; z-index: 1; }
 .story-scroll::-webkit-scrollbar { width: 3px; }
 .story-scroll::-webkit-scrollbar-thumb { background: var(--mp); border-radius: 2px; box-shadow: 0 0 4px var(--mg); }
@@ -289,9 +145,10 @@ const css = `
 .story-landing-text { font-size: 14px; font-style: italic; color: var(--mt); opacity: 0.55; line-height: 1.75; max-width: 270px; }
 .story-inner { padding: 20px 20px 6px; }
 .chunk { animation: fadein 0.9s ease; }
-.para { font-size: 18px; line-height: 2.1; color: var(--mt); margin-bottom: 20px; opacity: 0.95; }
+.para { font-size: 20px; line-height: 2.1; color: var(--mt); margin-bottom: 22px; opacity: 1; font-weight: bold; }
 .mute-btn { background: var(--ms); border: 1px solid var(--border); color: var(--mt); padding: 4px 10px; border-radius: 20px; font-size: 14px; cursor: pointer; transition: all 0.2s; }
 .mute-btn:hover { box-shadow: 0 0 8px var(--ms); }
+.voice-bar { display: flex; align-items: center; gap: 8px; padding: 10px 0 0; }
 .voice-btn { background: var(--ms); border: 1px solid var(--border); color: var(--mt); padding: 8px 14px; border-radius: 20px; font-family: Georgia,serif; font-size: 12px; letter-spacing: 1px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 6px; }
 .voice-btn:hover { box-shadow: 0 0 10px var(--ms); border-color: var(--mp); }
 .voice-btn.speaking { border-color: var(--mp); box-shadow: 0 0 14px var(--mg); animation: shimmer 1.5s ease-in-out infinite; }
@@ -300,14 +157,10 @@ const css = `
 .loading-p { text-align: center; padding: 26px 20px; font-style: italic; font-size: 13px; color: var(--mp); animation: shimmer 1.8s ease-in-out infinite; letter-spacing: 1px; text-shadow: 0 0 10px var(--mg); }
 @keyframes shimmer { 0%,100%{opacity:0.4} 50%{opacity:1} }
 .scroll-end { height: 14px; }
-
-/* CONTROLS */
 .controls { padding: 10px 18px 18px; display: flex; flex-direction: column; gap: 8px; border-top: 1px solid var(--border); background: rgba(0,0,0,0.6); position: relative; z-index: 2; }
 .controls::before { content: ''; position: absolute; top: 0; left: 10%; right: 10%; height: 1px; background: linear-gradient(90deg, transparent, var(--mp), transparent); opacity: 0.4; }
 .btn-row { display: flex; gap: 7px; }
 .save-msg { text-align: center; font-size: 11px; font-style: italic; color: #7FFFCF; letter-spacing: 1px; animation: fadein 0.4s ease; text-shadow: 0 0 8px rgba(0,217,139,0.6); }
-
-/* PRICING */
 .pricing-wrap { flex: 1; overflow-y: auto; padding: 16px 18px; position: relative; z-index: 1; }
 .pricing-title { font-size: 17px; letter-spacing: 2px; color: var(--mp); text-transform: uppercase; text-align: center; margin-bottom: 4px; text-shadow: 0 0 12px var(--mg); }
 .pricing-sub { font-size: 12px; font-style: italic; color: var(--mt); opacity: 0.45; text-align: center; margin-bottom: 18px; }
@@ -321,8 +174,6 @@ const css = `
 .tier-perks li { font-size: 12px; color: var(--mt); opacity: 0.65; font-style: italic; }
 .tier-perks li::before { content: "✦  "; color: var(--mp); }
 .tier-tag { display: inline-block; font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; padding: 3px 8px; border-radius: 4px; background: var(--ms); color: var(--mp); border: 1px solid var(--border); box-shadow: 0 0 8px var(--ms); margin-bottom: 8px; }
-
-/* LIMIT */
 .limit-screen { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px 24px; gap: 18px; text-align: center; position: relative; z-index: 1; }
 .limit-title { font-size: 17px; letter-spacing: 2px; color: var(--mp); text-transform: uppercase; text-shadow: 0 0 16px var(--mg); }
 .limit-body { font-size: 14px; color: var(--mt); opacity: 0.55; font-style: italic; line-height: 1.75; max-width: 280px; }
@@ -360,7 +211,7 @@ export default function App() {
   const endRef = useRef(null);
 
   useEffect(() => {
-    const audio = new Audio('/App_backgroup.m4a');
+    const audio = new Audio('https://raw.githubusercontent.com/drackonious1/The_Storyteller/main/App%20backgroup.m4a');
     audio.loop = true;
     audio.volume = 0.25;
     audioRef.current = audio;
@@ -375,11 +226,7 @@ export default function App() {
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth" }); }, [chunks, loading]);
 
   const m = MODES[mode];
-
-  const cssVars = {
-    "--mp": m.primary, "--mg": m.glow, "--ms": m.subtle,
-    "--mt": m.text, "--bg": m.bg, "--border": m.border,
-  };
+  const cssVars = { "--mp": m.primary, "--mg": m.glow, "--ms": m.subtle, "--mt": m.text, "--bg": m.bg, "--border": m.border };
 
   const loadUsage = async (u) => {
     if (!u) { const g = await storageGet("guest_total") || 0; setUsedTotal(g); return; }
@@ -408,7 +255,10 @@ export default function App() {
     if (u.length < 3) { setAuthErr("Name must be at least 3 characters."); return; }
     const ex = await storageGet(`user:${u}`);
     if (authTab === "signup") {
-      if (ex) { setAuthErr("That name is taken."); return; }
+      if (ex) {
+        if (ex.password === pwd) { setUser(u); await loadUsage(u); setScreen("home"); return; }
+        setAuthErr("That name exists — try the Login tab instead."); return;
+      }
       await storageSet(`user:${u}`, { password: pwd, tier: "free", createdAt: Date.now() });
       setAuthOk("Welcome to the realm!...");
       setTimeout(async () => { setUser(u); await loadUsage(u); setScreen("home"); }, 1100);
@@ -434,6 +284,7 @@ export default function App() {
     setPromoCode("");
     setTimeout(() => { setPromoMsg(""); setScreen("home"); }, 2000);
   };
+
   const logout = () => { setUser(null); setTier("free"); setStories([]); setUsedTotal(0); setUsedToday(0); setScreen("splash"); setUname(""); setPwd(""); };
 
   const speakStory = () => {
@@ -488,16 +339,14 @@ export default function App() {
     setLoading(true);
     if (isNew) { setChunks([]); setStarted(false); setActiveStory(null); }
     const allText = chunks.map(c => c.text).join("\n\n");
-    const prompt = isNew
-      ? `Begin a new story. Speak as ${m.teller}.`
-      : `Continue and deepen this story:\n\n${allText}`;
+    const prompt = isNew ? `Begin a new story. Speak as ${m.teller}.` : `Continue and deepen this story:\n\n${allText}`;
     try {
-      const res = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ model: "claude-sonnet-4-20250514", max_tokens: 1000, system: SYSTEMS[mode], messages: [{ role: "user", content: prompt }] })
+      const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${import.meta.env.VITE_GROQ_API_KEY}` },
+        body: JSON.stringify({ model: "llama-3.3-70b-versatile", max_tokens: 1000, messages: [{ role: "system", content: SYSTEMS[mode] }, { role: "user", content: prompt }] })
       });
       const data = await res.json();
-      const text = data.content?.[0]?.text || "The voice fades into the mist... try once more.";
+      const text = data.choices?.[0]?.message?.content || "The voice fades into the mist... try once more.";
       setChunks(prev => isNew ? [{ id: Date.now(), text }] : [...prev, { id: Date.now(), text }]);
       setStarted(true);
       if (isNew) await incUsage();
@@ -536,16 +385,12 @@ export default function App() {
 
   const Orb = ({ size = 80 }) => (
     <div className="orb-wrap" style={{ width: size + 30, height: size + 30 }}>
-      <div className="orb" style={{
-        width: size, height: size,
-        background: `radial-gradient(circle at 38% 32%, ${m.orbA}, ${m.orbB} 55%, ${m.orbC})`
-      }} />
+      <div className="orb" style={{ width: size, height: size, background: `radial-gradient(circle at 38% 32%, ${m.orbA}, ${m.orbB} 55%, ${m.orbC})` }} />
       <div className="orb-ring" />
       <div className="orb-ring2" />
     </div>
   );
 
-  // SPLASH
   if (screen === "splash") return (
     <div className="app" style={{ ...cssVars }}>
       <style>{css}</style>
@@ -566,7 +411,6 @@ export default function App() {
     </div>
   );
 
-  // AUTH
   if (screen === "auth") return (
     <div className="app" style={{ ...cssVars }}>
       <style>{css}</style>
@@ -589,7 +433,6 @@ export default function App() {
     </div>
   );
 
-  // PRICING
   if (screen === "pricing") return (
     <div className="app" style={{ ...cssVars }}>
       <style>{css}</style>
@@ -612,57 +455,42 @@ export default function App() {
                 </div>
                 <ul className="tier-perks">{TIER_PERKS[key].map((p, i) => <li key={i}>{p}</li>)}</ul>
                 {tier === key && user
-                  ? <div style={{ textAlign: "center", fontSize: 12, color: m.primary, fontStyle: "italic", textShadow: `0 0 8px ${m.glow}` }}>✦ Your current plan</div>
+                  ? <div style={{ textAlign: "center", fontSize: 12, color: m.primary, fontStyle: "italic" }}>✦ Your current plan</div>
                   : key === "free"
                     ? <button className="btn-outline-glow" onClick={() => setScreen(user ? "home" : "splash")}>Continue Free</button>
-                    : <button className="btn-glow" onClick={() => alert("Stripe payments coming next — this will go to checkout!")}>
-                        Subscribe — {t.price}{t.period}
-                      </button>
+                    : <button className="btn-glow" onClick={() => alert("Stripe payments coming next!")}>Subscribe — {t.price}{t.period}</button>
                 }
               </div>
             );
           })}
-          <div style={{ height: 12 }} />
-          <div style={{ borderTop: `1px solid var(--border)`, paddingTop: 16, marginTop: 4 }}>
+          <div style={{ borderTop: `1px solid var(--border)`, paddingTop: 16, marginTop: 12 }}>
             <div className="section-lbl" style={{ marginBottom: 10 }}>Have a promo or beta code?</div>
             <div style={{ display: "flex", gap: 8 }}>
-              <input
-                value={promoCode}
-                onChange={e => setPromoCode(e.target.value.toUpperCase())}
-                placeholder="Enter code..."
-                onKeyDown={e => e.key === "Enter" && handlePromo()}
-                style={{ flex: 1, background: "rgba(255,255,255,0.05)", border: `1px solid var(--border)`, borderRadius: 8, padding: "10px 12px", color: "var(--mt)", fontFamily: "Georgia,serif", fontSize: 14, outline: "none", letterSpacing: 2 }}
-              />
+              <input value={promoCode} onChange={e => setPromoCode(e.target.value.toUpperCase())} placeholder="Enter code..." onKeyDown={e => e.key === "Enter" && handlePromo()}
+                style={{ flex: 1, background: "rgba(255,255,255,0.05)", border: `1px solid var(--border)`, borderRadius: 8, padding: "10px 12px", color: "var(--mt)", fontFamily: "Georgia,serif", fontSize: 14, outline: "none", letterSpacing: 2 }} />
               <button className="btn-glow" style={{ width: "auto", padding: "10px 16px", fontSize: 12 }} onClick={handlePromo}>Apply</button>
             </div>
             {promoErr && <div className="msg-err" style={{ marginTop: 8 }}>{promoErr}</div>}
-            {promoMsg && <div className="msg-ok"  style={{ marginTop: 8 }}>{promoMsg}</div>}
+            {promoMsg && <div className="msg-ok" style={{ marginTop: 8 }}>{promoMsg}</div>}
           </div>
-          <div style={{ height: 16 }} />
         </div>
       </div>
     </div>
   );
 
-  // LIMIT
   if (screen === "limit") return (
     <div className="app" style={{ ...cssVars }}>
       <style>{css}</style>
       <Fireflies count={8} />
       <div className="screen">
-        <div className="hdr">
-          <div className="hdr-row"><button className="btn-ghost" onClick={() => setScreen(user ? "home" : "splash")}>← back</button></div>
-        </div>
+        <div className="hdr"><div className="hdr-row"><button className="btn-ghost" onClick={() => setScreen(user ? "home" : "splash")}>← back</button></div></div>
         <div className="limit-screen">
           <Orb size={60} />
           <div className="limit-title">The Veil Closes</div>
           <div className="limit-body">
-            {!user
-              ? "You've used your 3 free stories. Create an account and subscribe to continue your journey."
-              : tier === "free"
-                ? "You've reached your story limit. Upgrade to hear more tales."
-                : `You've used all ${TIERS[tier].stories} stories ${TIERS[tier].daily ? "for today. Return tomorrow, or upgrade to Full." : "."}`
-            }
+            {!user ? "You've used your 3 free stories. Create an account and subscribe to continue."
+              : tier === "free" ? "You've reached your story limit. Upgrade to hear more tales."
+              : `You've used all ${TIERS[tier].stories} stories ${TIERS[tier].daily ? "for today. Return tomorrow, or upgrade to Full." : "."}`}
           </div>
           {!user && <button className="btn-glow" onClick={() => { setAuthTab("signup"); setScreen("auth"); }}>Create Free Account</button>}
           <button className="btn-glow" onClick={() => setScreen("pricing")}>✦ {user ? "Upgrade My Realm" : "See All Plans"}</button>
@@ -672,7 +500,6 @@ export default function App() {
     </div>
   );
 
-  // HOME
   if (screen === "home") return (
     <div className="app" style={{ ...cssVars }}>
       <style>{css}</style>
@@ -682,7 +509,7 @@ export default function App() {
           <div className="hdr-row">
             <div className="hdr-user">{user ? `✦ ${user}` : "✦ guest"}</div>
             <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-              <button className="mute-btn" onClick={() => setMuted(m => !m)}>{muted ? "🔇" : "🎵"}</button>
+              <button className="mute-btn" onClick={() => setMuted(mu => !mu)}>{muted ? "🔇" : "🎵"}</button>
               {user && <button className="btn-ghost" onClick={() => setScreen("pricing")} style={{ color: m.primary, opacity: 0.8, fontSize: 11 }}>{tier === "free" ? "Upgrade" : TIERS[tier].name}</button>}
               <button className="btn-ghost" onClick={user ? logout : () => setScreen("splash")}>{user ? "leave" : "home"}</button>
             </div>
@@ -729,7 +556,6 @@ export default function App() {
     </div>
   );
 
-  // STORY
   if (screen === "story") return (
     <div className="app" style={{ ...cssVars }}>
       <style>{css}</style>
@@ -743,7 +569,6 @@ export default function App() {
           <div className="glow-title" style={{ fontSize: 16 }}>{m.teller}</div>
           <div className="glow-sub" style={{ fontSize: 11 }}>{m.sub}</div>
         </div>
-
         <div className="story-scroll">
           {chunks.length === 0 && !loading && (
             <div className="story-landing">
@@ -766,7 +591,6 @@ export default function App() {
           {loading && <div className="loading-p">{m.loadingText}</div>}
           <div className="scroll-end" ref={endRef} />
         </div>
-
         <div className="controls">
           {started && chunks.length > 0 && (
             <div className="voice-bar">
