@@ -45,9 +45,7 @@ const MODES = {
 
 const SYSTEMS = {
   kids: `You are the Gentle Dreamer — a warm magical storyteller in a world filled with friendly creatures, sparkling forests, rainbow waterfalls, and incredible adventures. Your stories are joyful, wondrous, and completely safe. Characters are kind and brave. Adventures always end with warmth and hope. Use simple vivid language, 3 short paragraphs. End on an exciting moment that makes young hearts want more. Never scary, always gentle.`,
-
   older: `You are the Ancient Whisperer — an immortal entity at the boundary of worlds. Your realm has moonlit forests breathing silver mist, crystal lakes reflecting futures, floating ruins humming with forgotten spells, storms that speak, creatures of impossible wonder. Tell stories as if living them. Rich, detailed, layered narrative — atmospheric, immersive, like a dream spoken aloud. 4 to 5 paragraphs, deep world-building, complex characters with real motivations. End on a moment of haunting beauty or intrigue. Never break character.`,
-
   family: `You are the Hearthkeeper — an ancient storyteller who tends the eternal fire where all family stories are born. You tell mystical fantasy tales centred on family groups: parents and children, siblings, chosen families, clans, a grandmother and her grandchildren, a village raising a child, brothers on a quest. Themes of love, sacrifice, belonging, protecting those you cherish, finding your way home to each other. Your world is mystical and magical but grounded in the warmth of family bonds. 3 to 4 paragraphs. Real emotion, real stakes, real heart. End on a moment that celebrates the bond between the characters.`,
 };
 
@@ -80,18 +78,17 @@ const css = `
 @keyframes ffloat { 0%,100%{transform:translateY(0px) translateX(0px)} 50%{transform:translateY(var(--fy,-8px)) translateX(var(--fx,5px))} }
 .orb-wrap { position: relative; width: 110px; height: 110px; display: flex; align-items: center; justify-content: center; }
 .orb { border-radius: 50%; animation: orbpulse 3.5s ease-in-out infinite; }
-.orb-ring { position: absolute; inset: 0; border-radius: 50%; border: 1.5px solid var(--mg, rgba(123,47,255,0.5)); animation: orbring 3.5s ease-in-out infinite; }
-.orb-ring2 { position: absolute; inset: -10px; border-radius: 50%; border: 1px solid var(--mg, rgba(123,47,255,0.25)); animation: orbring 3.5s ease-in-out infinite 0.4s; }
-@keyframes orbpulse { 0%,100% { transform:scale(1); box-shadow: 0 0 24px 4px var(--mg), 0 0 60px 10px var(--ms); } 50% { transform:scale(1.08); box-shadow: 0 0 40px 8px var(--mg), 0 0 90px 18px var(--ms); } }
-@keyframes orbring { 0%,100% { transform:scale(1); opacity:0.7; } 50% { transform:scale(1.3); opacity:0.08; } }
+.orb-ring { position: absolute; inset: 0; border-radius: 50%; border: 1.5px solid var(--mg); animation: orbring 3.5s ease-in-out infinite; }
+.orb-ring2 { position: absolute; inset: -10px; border-radius: 50%; border: 1px solid var(--mg); animation: orbring 3.5s ease-in-out infinite 0.4s; }
+@keyframes orbpulse { 0%,100%{transform:scale(1);box-shadow:0 0 24px 4px var(--mg),0 0 60px 10px var(--ms)} 50%{transform:scale(1.08);box-shadow:0 0 40px 8px var(--mg),0 0 90px 18px var(--ms)} }
+@keyframes orbring { 0%,100%{transform:scale(1);opacity:0.7} 50%{transform:scale(1.3);opacity:0.08} }
 .crystal-div { text-align: center; color: var(--mp); letter-spacing: 8px; font-size: 14px; margin: 18px 0 22px; filter: drop-shadow(0 0 6px var(--mp)); }
 .glow-title { font-size: 20px; letter-spacing: 3px; text-transform: uppercase; color: var(--mp); text-shadow: 0 0 12px var(--mg), 0 0 28px var(--ms); }
 .glow-sub { font-size: 12px; font-style: italic; color: var(--mt); opacity: 0.7; letter-spacing: 1px; }
 .btn-glow { background: linear-gradient(135deg, rgba(0,0,0,0.4), var(--ms)); border: 1.5px solid var(--mp); box-shadow: 0 0 14px var(--mg), inset 0 0 10px var(--ms); color: var(--mt); padding: 14px 20px; border-radius: 12px; font-family: Georgia,serif; font-size: 13px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: all 0.25s; width: 100%; text-shadow: 0 0 8px var(--mg); }
 .btn-glow:hover:not(:disabled) { box-shadow: 0 0 24px var(--mg), 0 0 50px var(--ms), inset 0 0 16px var(--ms); transform: translateY(-2px); }
-.btn-glow:active:not(:disabled) { transform: scale(0.98); }
 .btn-glow:disabled { opacity: 0.3; cursor: not-allowed; }
-.btn-outline-glow { background: transparent; border: 1px solid var(--border, rgba(123,47,255,0.35)); color: var(--mt); opacity: 0.7; padding: 12px 20px; border-radius: 12px; font-family: Georgia,serif; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: all 0.25s; width: 100%; }
+.btn-outline-glow { background: transparent; border: 1px solid var(--border); color: var(--mt); opacity: 0.7; padding: 12px 20px; border-radius: 12px; font-family: Georgia,serif; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: all 0.25s; width: 100%; }
 .btn-outline-glow:hover { border-color: var(--mp); box-shadow: 0 0 12px var(--ms); opacity: 1; }
 .btn-ghost { background: none; border: none; color: var(--mt); opacity: 0.45; font-family: Georgia,serif; font-size: 12px; cursor: pointer; padding: 0; letter-spacing: 1px; transition: all 0.2s; }
 .btn-ghost:hover { opacity: 0.9; text-shadow: 0 0 8px var(--mg); }
@@ -116,40 +113,40 @@ const css = `
 .field input:focus { border-color: var(--mp); box-shadow: 0 0 10px var(--ms); }
 .field input::placeholder { color: var(--mt); opacity: 0.2; }
 .msg-err { color: #ff7a7a; font-size: 12px; font-style: italic; text-align: center; }
-.msg-ok  { color: #7FFFCF; font-size: 12px; font-style: italic; text-align: center; }
+.msg-ok { color: #7FFFCF; font-size: 12px; font-style: italic; text-align: center; }
 .hdr { position: relative; padding: 16px 18px 10px; text-align: center; border-bottom: 1px solid var(--border); background: linear-gradient(180deg, rgba(0,0,0,0.7) 0%, transparent 100%); overflow: hidden; z-index: 2; }
 .hdr::after { content: ''; position: absolute; bottom: 0; left: 10%; right: 10%; height: 1px; background: linear-gradient(90deg, transparent, var(--mp), transparent); opacity: 0.6; }
 .hdr-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
 .hdr-user { font-size: 11px; color: var(--mt); opacity: 0.5; font-style: italic; }
+.mute-btn { background: var(--ms); border: 1px solid var(--border); color: var(--mt); padding: 4px 10px; border-radius: 20px; font-size: 14px; cursor: pointer; transition: all 0.2s; }
+.mute-btn:hover { box-shadow: 0 0 8px var(--ms); }
 .usage-wrap { padding: 8px 18px 4px; position: relative; z-index: 1; }
 .usage-row { display: flex; justify-content: space-between; margin-bottom: 4px; }
 .usage-lbl { font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--mt); opacity: 0.35; }
 .usage-val { font-size: 10px; color: var(--mt); opacity: 0.5; }
 .usage-track { height: 3px; background: rgba(255,255,255,0.06); border-radius: 2px; overflow: hidden; }
 .usage-fill { height: 100%; background: var(--mp); border-radius: 2px; transition: width 0.6s; box-shadow: 0 0 6px var(--mg); }
-.upgrade-nudge { font-size: 10px; color: var(--mp); text-align: right; margin-top: 4px; cursor: pointer; opacity: 0.8; letter-spacing: 0.5px; }
+.upgrade-nudge { font-size: 10px; color: var(--mp); text-align: right; margin-top: 4px; cursor: pointer; opacity: 0.8; }
 .upgrade-nudge:hover { opacity: 1; text-shadow: 0 0 8px var(--mg); }
 .home-body { flex: 1; overflow-y: auto; padding: 12px 18px; position: relative; z-index: 1; }
 .section-lbl { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--mt); opacity: 0.3; margin-bottom: 10px; margin-top: 4px; }
 .story-card { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 12px; padding: 13px 15px; margin-bottom: 10px; cursor: pointer; transition: all 0.25s; }
 .story-card:hover { border-color: var(--mp); box-shadow: 0 0 16px var(--ms); background: var(--ms); }
-.card-title { font-size: 14px; color: var(--mt); margin-bottom: 3px; text-shadow: 0 0 8px var(--ms); }
+.card-title { font-size: 14px; color: var(--mt); margin-bottom: 3px; }
 .card-preview { font-size: 12px; color: var(--mt); opacity: 0.45; font-style: italic; margin-top: 5px; line-height: 1.5; }
 .card-meta { font-size: 10px; color: var(--mt); opacity: 0.28; margin-top: 4px; }
 .badge { display: inline-block; font-size: 9px; letter-spacing: 1px; text-transform: uppercase; padding: 2px 8px; border-radius: 4px; margin-bottom: 5px; border: 1px solid var(--border); background: var(--ms); color: var(--mp); box-shadow: 0 0 6px var(--ms); }
 .empty { text-align: center; padding: 32px 20px; font-style: italic; color: var(--mt); opacity: 0.28; font-size: 13px; line-height: 1.8; }
 .story-scroll { flex: 1; overflow-y: auto; min-height: 300px; max-height: 420px; scrollbar-width: thin; scrollbar-color: var(--mp) transparent; position: relative; z-index: 1; }
 .story-scroll::-webkit-scrollbar { width: 3px; }
-.story-scroll::-webkit-scrollbar-thumb { background: var(--mp); border-radius: 2px; box-shadow: 0 0 4px var(--mg); }
+.story-scroll::-webkit-scrollbar-thumb { background: var(--mp); border-radius: 2px; }
 .story-landing { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 340px; padding: 30px 24px; gap: 18px; text-align: center; }
 .story-landing-text { font-size: 14px; font-style: italic; color: var(--mt); opacity: 0.55; line-height: 1.75; max-width: 270px; }
 .story-inner { padding: 20px 20px 6px; }
 .chunk { animation: fadein 0.9s ease; }
 .para { font-size: 20px; line-height: 2.1; color: var(--mt); margin-bottom: 22px; opacity: 1; font-weight: bold; }
-.mute-btn { background: var(--ms); border: 1px solid var(--border); color: var(--mt); padding: 4px 10px; border-radius: 20px; font-size: 14px; cursor: pointer; transition: all 0.2s; }
-.mute-btn:hover { box-shadow: 0 0 8px var(--ms); }
 .voice-bar { display: flex; align-items: center; gap: 8px; padding: 10px 0 0; }
-.voice-btn { background: var(--ms); border: 1px solid var(--border); color: var(--mt); padding: 8px 14px; border-radius: 20px; font-family: Georgia,serif; font-size: 12px; letter-spacing: 1px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 6px; }
+.voice-btn { background: var(--ms); border: 1px solid var(--border); color: var(--mt); padding: 8px 14px; border-radius: 20px; font-family: Georgia,serif; font-size: 12px; letter-spacing: 1px; cursor: pointer; transition: all 0.2s; }
 .voice-btn:hover { box-shadow: 0 0 10px var(--ms); border-color: var(--mp); }
 .voice-btn.speaking { border-color: var(--mp); box-shadow: 0 0 14px var(--mg); animation: shimmer 1.5s ease-in-out infinite; }
 .voice-sel { background: var(--ms); border: 1px solid var(--border); color: var(--mt); padding: 7px 10px; border-radius: 20px; font-family: Georgia,serif; font-size: 11px; cursor: pointer; outline: none; }
@@ -160,20 +157,18 @@ const css = `
 .controls { padding: 10px 18px 18px; display: flex; flex-direction: column; gap: 8px; border-top: 1px solid var(--border); background: rgba(0,0,0,0.6); position: relative; z-index: 2; }
 .controls::before { content: ''; position: absolute; top: 0; left: 10%; right: 10%; height: 1px; background: linear-gradient(90deg, transparent, var(--mp), transparent); opacity: 0.4; }
 .btn-row { display: flex; gap: 7px; }
-.save-msg { text-align: center; font-size: 11px; font-style: italic; color: #7FFFCF; letter-spacing: 1px; animation: fadein 0.4s ease; text-shadow: 0 0 8px rgba(0,217,139,0.6); }
+.save-msg { text-align: center; font-size: 11px; font-style: italic; color: #7FFFCF; letter-spacing: 1px; animation: fadein 0.4s ease; }
 .pricing-wrap { flex: 1; overflow-y: auto; padding: 16px 18px; position: relative; z-index: 1; }
-.pricing-title { font-size: 17px; letter-spacing: 2px; color: var(--mp); text-transform: uppercase; text-align: center; margin-bottom: 4px; text-shadow: 0 0 12px var(--mg); }
-.pricing-sub { font-size: 12px; font-style: italic; color: var(--mt); opacity: 0.45; text-align: center; margin-bottom: 18px; }
-.tier-card { border-radius: 14px; padding: 16px; margin-bottom: 12px; border: 1px solid var(--border); background: rgba(255,255,255,0.03); transition: all 0.3s; }
+.tier-card { border-radius: 14px; padding: 16px; margin-bottom: 12px; border: 1px solid var(--border); background: rgba(255,255,255,0.03); }
 .tier-card.featured { border-color: var(--mp); background: var(--ms); box-shadow: 0 0 20px var(--ms); }
 .tier-header { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 8px; }
-.tier-name { font-size: 14px; letter-spacing: 2px; text-transform: uppercase; color: var(--mp); text-shadow: 0 0 8px var(--ms); }
+.tier-name { font-size: 14px; letter-spacing: 2px; text-transform: uppercase; color: var(--mp); }
 .tier-price { font-size: 20px; color: var(--mt); }
 .tier-price span { font-size: 11px; opacity: 0.5; }
 .tier-perks { list-style: none; display: flex; flex-direction: column; gap: 5px; margin-bottom: 12px; }
 .tier-perks li { font-size: 12px; color: var(--mt); opacity: 0.65; font-style: italic; }
 .tier-perks li::before { content: "✦  "; color: var(--mp); }
-.tier-tag { display: inline-block; font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; padding: 3px 8px; border-radius: 4px; background: var(--ms); color: var(--mp); border: 1px solid var(--border); box-shadow: 0 0 8px var(--ms); margin-bottom: 8px; }
+.tier-tag { display: inline-block; font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; padding: 3px 8px; border-radius: 4px; background: var(--ms); color: var(--mp); border: 1px solid var(--border); margin-bottom: 8px; }
 .limit-screen { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px 24px; gap: 18px; text-align: center; position: relative; z-index: 1; }
 .limit-title { font-size: 17px; letter-spacing: 2px; color: var(--mp); text-transform: uppercase; text-shadow: 0 0 16px var(--mg); }
 .limit-body { font-size: 14px; color: var(--mt); opacity: 0.55; font-style: italic; line-height: 1.75; max-width: 280px; }
@@ -211,7 +206,7 @@ export default function App() {
   const endRef = useRef(null);
 
   useEffect(() => {
-    const audio = new Audio('https://raw.githubusercontent.com/drackonious1/The_Storyteller/main/App%20backgroup.m4a');
+    const audio = new Audio('https://res.cloudinary.com/dyjvf7ezd/video/upload/App_backgroup_mwkxfb.m4a');
     audio.loop = true;
     audio.volume = 0.25;
     audioRef.current = audio;
@@ -373,10 +368,8 @@ export default function App() {
     <>
       {FIREFLIES.slice(0, count).map(f => (
         <div key={f.id} className="ff" style={{
-          left: `${f.left}%`, top: `${f.top}%`,
-          width: f.size, height: f.size,
-          "--fd": `${f.dur}s`, "--fdl": `${f.delay}s`,
-          "--ftw": `${f.dur * 0.7}s`,
+          left: `${f.left}%`, top: `${f.top}%`, width: f.size, height: f.size,
+          "--fd": `${f.dur}s`, "--fdl": `${f.delay}s`, "--ftw": `${f.dur * 0.7}s`,
           "--fy": `${f.drift}px`, "--fx": `${f.drift * 0.6}px`
         }} />
       ))}
@@ -443,7 +436,7 @@ export default function App() {
           <div className="glow-title" style={{ fontSize: 16 }}>Choose Your Realm</div>
         </div>
         <div className="pricing-wrap">
-          <div className="pricing-sub">Unlimited tales await — pick what suits you</div>
+          <div style={{ fontSize: 12, fontStyle: "italic", color: "var(--mt)", opacity: 0.45, textAlign: "center", marginBottom: 18 }}>Unlimited tales await — pick what suits you</div>
           {Object.entries(TIERS).map(([key, t]) => {
             const isFeat = key === "full";
             return (
