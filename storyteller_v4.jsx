@@ -274,7 +274,9 @@ export default function App() {
     if (!user) { setPromoErr("Create an account first to use a promo code."); return; }
     const profile = await storageGet(`user:${user}`) || {};
     await storageSet(`user:${user}`, { ...profile, tier: found.tier });
+    await storageSet(`usage:${user}:${todayKey()}`, 0);
     setTier(found.tier);
+    setUsedToday(0);
     setPromoMsg(found.msg);
     setPromoCode("");
     setTimeout(() => { setPromoMsg(""); setScreen("home"); }, 2000);
