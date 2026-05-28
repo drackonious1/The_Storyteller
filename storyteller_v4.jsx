@@ -210,8 +210,9 @@ export default function App() {
     audio.loop = true;
     audio.volume = 0.25;
     audioRef.current = audio;
-    audio.play().catch(() => {});
-    return () => { audio.pause(); audio.src = ''; };
+    const startAudio = () => { audio.play().catch(() => {}); document.removeEventListener('click', startAudio); };
+    document.addEventListener('click', startAudio);
+    return () => { audio.pause(); audio.src = ''; document.removeEventListener('click', startAudio); };
   }, []);
 
   useEffect(() => {
@@ -282,6 +283,24 @@ export default function App() {
     setTimeout(() => { setPromoMsg(""); setScreen("home"); }, 2000);
   };
 
+  const fadeOutMusic = () => {
+    if (!audioRef.current) return;
+    const fade = setInterval(() => {
+      if (audioRef.current.volume > 0.02) { audioRef.current.volume = Math.max(0, audioRef.current.volume - 0.02); }
+      else { audioRef.current.pause(); audioRef.current.volume = 0.25; clearInterval(fade); }
+    }, 100);
+  };
+
+  const fadeInMusic = () => {
+    if (!audioRef.current) return;
+    audioRef.current.volume = 0;
+    audioRef.current.play().catch(() => {});
+    const fade = setInterval(() => {
+      if (audioRef.current.volume < 0.23) { audioRef.current.volume = Math.min(0.25, audioRef.current.volume + 0.02); }
+      else { clearInterval(fade); }
+    }, 100);
+  };
+
   const logout = () => { setUser(null); setTier("free"); setStories([]); setUsedTotal(0); setUsedToday(0); setScreen("splash"); setUname(""); setPwd(""); };
 
   const speakStory = () => {
@@ -334,7 +353,7 @@ export default function App() {
     const a = allowance();
     if (!a.ok) { setScreen("limit"); return; }
     setLoading(true);
-    if (isNew) { setChunks([]); setStarted(false); setActiveStory(null); }
+    if (isNew) { setChunks([]); setStarted(false); setActiveStory(null); fadeOutMusic(); }
     const allText = chunks.map(c => c.text).join("\n\n");
     const prompt = isNew ? `Begin a new story. Speak as ${m.teller}.` : `Continue and deepen this story:\n\n${allText}`;
     try {
@@ -558,7 +577,7 @@ export default function App() {
       <div className="screen">
         <div className="hdr">
           <div className="hdr-row">
-            <button className="btn-ghost" onClick={() => setScreen(user ? "home" : "splash")}>← {user ? "my tales" : "home"}</button>
+            <button className="btn-ghost" onClick={() => { setScreen(user ? "home" : "splash"); fadeInMusic(); }}>← {user ? "my tales" : "home"}</button>
             <div className="badge" style={{ "--mp": m.primary, "--ms": m.subtle, "--border": m.border }}>{m.badge}</div>
           </div>
           <div className="glow-title" style={{ fontSize: 16 }}>{m.teller}</div>
@@ -612,7 +631,7 @@ export default function App() {
                 <div className="btn-row">
                   {user && <button className="btn-sm" onClick={saveStory} disabled={loading}>Save</button>}
                   <button className="btn-sm" onClick={() => callStory(true)} disabled={loading}>New Story</button>
-                  <button className="btn-sm" onClick={() => setScreen(user ? "home" : "splash")}>← Home</button>
+                  <button className="btn-sm" onClick={() => { setScreen(user ? "home" : "splash"); fadeInMusic(); }}>← Home</button>
                 </div>
               )}
             </>
