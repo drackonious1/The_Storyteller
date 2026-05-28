@@ -485,10 +485,10 @@ export default function App() {
           <div className="limit-body">
             {!user ? "You've used your 3 free stories. Create an account and subscribe to continue."
               : tier === "free" ? "You've reached your story limit. Upgrade to hear more tales."
-              : `You've used all ${TIERS[tier].stories} stories ${TIERS[tier].daily ? "for today. Return tomorrow, or upgrade to Full." : "."}`}
+              : `Your ${TIERS[tier].stories} adventures for today are complete ✦ Rest well — your next tales arrive tomorrow, and the realm will be waiting! 🌙`}
           </div>
           {!user && <button className="btn-glow" onClick={() => { setAuthTab("signup"); setScreen("auth"); }}>Create Free Account</button>}
-          <button className="btn-glow" onClick={() => setScreen("pricing")}>✦ {user ? "Upgrade My Realm" : "See All Plans"}</button>
+          {(tier === "free" || !user) && <button className="btn-glow" onClick={() => setScreen("pricing")}>✦ {user ? "Upgrade My Realm" : "See All Plans"}</button>}
           <button className="btn-ghost" onClick={() => setScreen(user ? "home" : "splash")}>Maybe later</button>
         </div>
       </div>
