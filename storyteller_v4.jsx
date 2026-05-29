@@ -306,22 +306,34 @@ export default function App() {
   const speakStory = () => {
     if (!chunks.length) return;
     if (speaking) { window.speechSynthesis.cancel(); setSpeaking(false); return; }
-    const text = chunks.map(c => c.text).join(". ");
-    const utter = new SpeechSynthesisUtterance(text);
-    const voices = window.speechSynthesis.getVoices();
-    const gender = voiceGender === "auto" ? (mode === "older" ? "male" : "female") : voiceGender;
-    const preferred = voices.find(v => gender === "male"
-      ? (v.name.toLowerCase().includes("male") || v.name.includes("David") || v.name.includes("Daniel") || v.name.includes("James"))
-      : (v.name.toLowerCase().includes("female") || v.name.includes("Samantha") || v.name.includes("Karen") || v.name.includes("Zira"))
-    ) || voices[0];
-    if (preferred) utter.voice = preferred;
-    utter.rate = 0.88;
-    utter.pitch = gender === "male" ? 0.85 : 1.1;
-    utter.volume = 1;
-    utter.onend = () => setSpeaking(false);
-    utter.onerror = () => setSpeaking(false);
-    window.speechSynthesis.speak(utter);
-    setSpeaking(true);
+    window.speechSynthesis.cancel();
+    setTimeout(() => {
+      const text = chunks.map(c => c.text).join(". ");
+      const utter = new SpeechSynthesisUtterance(text);
+      const voices = window.speechSynthesis.getVoices();
+      const gender = voiceGender === "auto" ? (mode === "older" ? "male" : "female") : voiceGender;
+      let preferred = null;
+      if (gender === "male") {
+        preferred =
+          voices.find(v => /david|daniel|james|mark|george|microsoft david|microsoft james/i.test(v.name)) ||
+          voices.find(v => /male/i.test(v.name)) ||
+          voices.find(v => v.lang && v.lang.startsWith("en") && !/female|zira|samantha|karen|victoria|moira|fiona/i.test(v.name));
+      } else {
+        preferred =
+          voices.find(v => /samantha|karen|zira|victoria|moira|fiona|microsoft zira|google uk english female/i.test(v.name)) ||
+          voices.find(v => /female/i.test(v.name)) ||
+          voices.find(v => v.lang && v.lang.startsWith("en"));
+      }
+      if (!preferred) preferred = voices[0];
+      if (preferred) utter.voice = preferred;
+      utter.rate = 0.88;
+      utter.pitch = gender === "male" ? 0.85 : 1.1;
+      utter.volume = 1;
+      utter.onend = () => setSpeaking(false);
+      utter.onerror = () => setSpeaking(false);
+      window.speechSynthesis.speak(utter);
+      setSpeaking(true);
+    }, 150);
   };
 
   const saveStory = async () => {
