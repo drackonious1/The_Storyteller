@@ -202,8 +202,19 @@ export default function App() {
   const [speaking, setSpeaking] = useState(false);
   const [voiceGender, setVoiceGender] = useState("auto");
   const [muted, setMuted] = useState(false);
+  const [voices, setVoices] = useState([]);
   const audioRef = useRef(null);
   const endRef = useRef(null);
+
+  useEffect(() => {
+    const loadVoices = () => {
+      const v = window.speechSynthesis.getVoices();
+      if (v.length > 0) setVoices(v);
+    };
+    loadVoices();
+    window.speechSynthesis.onvoiceschanged = loadVoices;
+    return () => { window.speechSynthesis.onvoiceschanged = null; };
+  }, []);
 
   useEffect(() => {
     const audio = new Audio('https://res.cloudinary.com/dyjvf7ezd/video/upload/App_backgroup_mwkxfb.m4a');
@@ -309,13 +320,14 @@ export default function App() {
     setTimeout(() => {
       const text = chunks.map(c => c.text).join(". ");
       const utter = new SpeechSynthesisUtterance(text);
-      const voices = window.speechSynthesis.getVoices();
-      const preferred = voices.find(v =>
+      const voiceList = voices.length ? voices : window.speechSynthesis.getVoices();
+      const preferred = voiceList.find(v =>
         v.name.toLowerCase().includes("female") ||
         v.name.includes("Samantha") ||
         v.name.includes("Karen") ||
-        v.name.includes("Zira")
-      ) || voices[0];
+        v.name.includes("Zira") ||
+        v.name.includes("Google UK English Female")
+      ) || voiceList[0];
       if (preferred) utter.voice = preferred;
       utter.rate = 0.88;
       utter.pitch = 1.1;
