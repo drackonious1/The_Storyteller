@@ -314,7 +314,6 @@ export default function App() {
       const gender = voiceGender === "auto" ? (mode === "older" ? "male" : "female") : voiceGender;
       let preferred = null;
       let isTrueMale = false;
-      let isTrueFemale = false;
       if (gender === "male") {
         preferred =
           voices.find(v => /david|daniel|james|mark|george|microsoft david|microsoft james/i.test(v.name)) ||
@@ -325,13 +324,12 @@ export default function App() {
       } else {
         preferred =
           voices.find(v => /samantha|karen|zira|victoria|moira|fiona|microsoft zira|google uk english female/i.test(v.name)) ||
-          voices.find(v => /female/i.test(v.name));
-        if (preferred) isTrueFemale = true;
-        if (!preferred) preferred = voices.find(v => v.lang && v.lang.startsWith("en")) || voices[0];
+          voices.find(v => /female/i.test(v.name)) ||
+          voices[0];
       }
       if (preferred) utter.voice = preferred;
-      utter.rate = gender === "male" ? 0.82 : 0.9;
-      utter.pitch = gender === "male" ? (isTrueMale ? 0.85 : 0.65) : (isTrueFemale ? 1.2 : 1.7);
+      utter.rate = gender === "male" ? 0.82 : 0.88;
+      utter.pitch = gender === "male" ? (isTrueMale ? 0.85 : 0.65) : 1.1;
       utter.volume = 1;
       utter.onend = () => setSpeaking(false);
       utter.onerror = () => setSpeaking(false);
