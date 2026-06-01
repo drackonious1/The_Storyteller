@@ -306,20 +306,19 @@ export default function App() {
   const speakStory = () => {
     if (!chunks.length) return;
     if (speaking) { window.speechSynthesis.cancel(); setSpeaking(false); return; }
-    window.speechSynthesis.cancel();
     setTimeout(() => {
       const text = chunks.map(c => c.text).join(". ");
       const utter = new SpeechSynthesisUtterance(text);
       const voices = window.speechSynthesis.getVoices();
-      const gender = voiceGender === "auto" ? (mode === "older" ? "male" : "female") : voiceGender;
-      const hasMaleVoice = voices.some(v => /david|daniel|james|mark|george|microsoft david/i.test(v.name) || /male/i.test(v.name));
-      const preferred = voices.find(v => gender === "male"
-        ? (v.name.toLowerCase().includes("male") || v.name.includes("David") || v.name.includes("Daniel") || v.name.includes("James"))
-        : (v.name.toLowerCase().includes("female") || v.name.includes("Samantha") || v.name.includes("Karen") || v.name.includes("Zira"))
+      const preferred = voices.find(v =>
+        v.name.toLowerCase().includes("female") ||
+        v.name.includes("Samantha") ||
+        v.name.includes("Karen") ||
+        v.name.includes("Zira")
       ) || voices[0];
       if (preferred) utter.voice = preferred;
       utter.rate = 0.88;
-      utter.pitch = gender === "male" ? (hasMaleVoice ? 0.85 : 0.65) : 1.1;
+      utter.pitch = 1.1;
       utter.volume = 1;
       utter.onend = () => setSpeaking(false);
       utter.onerror = () => setSpeaking(false);
@@ -615,11 +614,6 @@ export default function App() {
               <button className={`voice-btn ${speaking ? "speaking" : ""}`} onClick={speakStory}>
                 {speaking ? "⏹ Stop" : "🔊 Listen"}
               </button>
-              <select className="voice-sel" value={voiceGender} onChange={e => setVoiceGender(e.target.value)}>
-                <option value="auto">Auto voice</option>
-                <option value="male">♂ Male</option>
-                <option value="female">♀ Female</option>
-              </select>
             </div>
           )}
           {!started ? (
