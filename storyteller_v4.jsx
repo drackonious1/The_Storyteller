@@ -317,26 +317,25 @@ export default function App() {
   const speakStory = () => {
     if (!chunks.length) return;
     if (speaking) { window.speechSynthesis.cancel(); setSpeaking(false); return; }
-    setTimeout(() => {
-      const text = chunks.map(c => c.text).join(". ");
-      const utter = new SpeechSynthesisUtterance(text);
-      const voiceList = voices.length ? voices : window.speechSynthesis.getVoices();
-      const preferred = voiceList.find(v =>
-        v.name.toLowerCase().includes("female") ||
-        v.name.includes("Samantha") ||
-        v.name.includes("Karen") ||
-        v.name.includes("Zira") ||
-        v.name.includes("Google UK English Female")
-      ) || voiceList[0];
-      if (preferred) utter.voice = preferred;
-      utter.rate = 0.88;
-      utter.pitch = 1.1;
-      utter.volume = 1;
-      utter.onend = () => setSpeaking(false);
-      utter.onerror = () => setSpeaking(false);
-      window.speechSynthesis.speak(utter);
-      setSpeaking(true);
-    }, 150);
+    window.speechSynthesis.cancel();
+    const text = chunks.map(c => c.text).join(". ");
+    const utter = new SpeechSynthesisUtterance(text);
+    const voiceList = voices.length ? voices : window.speechSynthesis.getVoices();
+    const preferred = voiceList.find(v =>
+      v.name.toLowerCase().includes("female") ||
+      v.name.includes("Samantha") ||
+      v.name.includes("Karen") ||
+      v.name.includes("Zira") ||
+      v.name.includes("Google UK English Female")
+    ) || voiceList[0];
+    if (preferred) utter.voice = preferred;
+    utter.rate = 0.88;
+    utter.pitch = 1.1;
+    utter.volume = 1;
+    utter.onend = () => setSpeaking(false);
+    utter.onerror = () => setSpeaking(false);
+    window.speechSynthesis.speak(utter);
+    setSpeaking(true);
   };
 
   const saveStory = async () => {
