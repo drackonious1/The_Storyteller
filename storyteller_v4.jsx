@@ -483,7 +483,10 @@ export default function App() {
                   ? <div style={{ textAlign: "center", fontSize: 12, color: m.primary, fontStyle: "italic" }}>✦ Your current plan</div>
                   : key === "free"
                     ? <button className="btn-outline-glow" onClick={() => setScreen(user ? "home" : "splash")}>Continue Free</button>
-                    : <button className="btn-glow" onClick={() => alert("Stripe payments coming next!")}>Subscribe — {t.price}{t.period}</button>
+                    : <button className="btn-glow" onClick={() => {
+                        const url = key === 'standard' ? 'https://buy.stripe.com/aFa3cv2EsbSyghS2j5abK00' : 'https://buy.stripe.com/14AaEX3Iw6ye8Pq9LxabK01';
+                        window.open(url, '_blank');
+                      }}>Subscribe — {t.price}{t.period}</button>
                 }
               </div>
             );
