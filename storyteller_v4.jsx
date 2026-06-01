@@ -320,23 +320,14 @@ export default function App() {
     const text = chunks.map(c => c.text).join(". ");
     const utter = new SpeechSynthesisUtterance(text);
     const voiceList = voices.length ? voices : window.speechSynthesis.getVoices();
-    const gender = voiceGender === "auto" ? (mode === "older" ? "male" : "female") : voiceGender;
-    let preferred = null;
-    if (gender === "male") {
-      preferred =
-        voiceList.find(v => /david|daniel|james|mark|george|lee|microsoft david|microsoft james/i.test(v.name)) ||
-        voiceList.find(v => /male/i.test(v.name)) ||
-        voiceList.find(v => v.name.includes("en") && !/female|zira|samantha|karen|victoria|moira|fiona/i.test(v.name));
-    } else {
-      preferred =
-        voiceList.find(v => /samantha|karen|zira|victoria|moira|fiona|microsoft zira|google uk english female/i.test(v.name)) ||
-        voiceList.find(v => /female/i.test(v.name)) ||
-        voiceList.find(v => v.name.includes("en"));
-    }
-    if (!preferred) preferred = voiceList[0];
+    const preferred =
+      voiceList.find(v => /samantha|karen|zira|victoria|moira|fiona|microsoft zira|google uk english female/i.test(v.name)) ||
+      voiceList.find(v => /female/i.test(v.name)) ||
+      voiceList.find(v => v.name.includes("en")) ||
+      voiceList[0];
     if (preferred) utter.voice = preferred;
     utter.rate = 0.88;
-    utter.pitch = gender === "male" ? 0.85 : 1.1;
+    utter.pitch = 1.1;
     utter.volume = 1;
     utter.onend = () => setSpeaking(false);
     utter.onerror = () => setSpeaking(false);
@@ -631,11 +622,6 @@ export default function App() {
               <button className={`voice-btn ${speaking ? "speaking" : ""}`} onClick={speakStory}>
                 {speaking ? "⏹ Stop" : "🔊 Listen"}
               </button>
-              <select className="voice-sel" value={voiceGender} onChange={e => setVoiceGender(e.target.value)}>
-                <option value="auto">Auto voice</option>
-                <option value="male">♂ Male</option>
-                <option value="female">♀ Female</option>
-              </select>
             </div>
           )}
           {!started ? (
