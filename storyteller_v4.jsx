@@ -330,7 +330,7 @@ export default function App() {
       }
       if (preferred) utter.voice = preferred;
       utter.rate = gender === "male" ? 0.82 : 0.88;
-      utter.pitch = gender === "male" ? (isTrueMale ? 0.85 : 0.65) : 1.1;
+      utter.pitch = gender === "male" ? (isTrueMale ? 0.85 : 0.65) : 1.3;
       utter.volume = 1;
       utter.onend = () => setSpeaking(false);
       utter.onerror = () => setSpeaking(false);
