@@ -64,8 +64,8 @@ const PROMO_CODES = {
 
 const TIER_PERKS = {
   free:     ["3 stories total to explore the realm", "All three story modes", "No account needed"],
-  standard: ["1 new story every day", "Save up to 20 tales", "Continue any story anytime", "All three story modes"],
-  full:     ["3 new stories every day", "Save up to 20 tales", "Continue any story anytime", "All three story modes", "Priority story generation"],
+  standard: ["1 new story per mode per day", "Save up to 20 tales", "Continue any story anytime", "All three story modes"],
+  full:     ["3 new stories per mode per day", "Save up to 20 tales", "Continue any story anytime", "All three story modes", "Priority story generation"],
 };
 
 const css = `
@@ -149,8 +149,6 @@ const css = `
 .voice-btn { background: var(--ms); border: 1px solid var(--border); color: var(--mt); padding: 8px 14px; border-radius: 20px; font-family: Georgia,serif; font-size: 12px; letter-spacing: 1px; cursor: pointer; transition: all 0.2s; }
 .voice-btn:hover { box-shadow: 0 0 10px var(--ms); border-color: var(--mp); }
 .voice-btn.speaking { border-color: var(--mp); box-shadow: 0 0 14px var(--mg); animation: shimmer 1.5s ease-in-out infinite; }
-.voice-sel { background: var(--ms); border: 1px solid var(--border); color: var(--mt); padding: 7px 10px; border-radius: 20px; font-family: Georgia,serif; font-size: 11px; cursor: pointer; outline: none; }
-.voice-sel option { background: #1a1a2e; }
 .loading-p { text-align: center; padding: 26px 20px; font-style: italic; font-size: 13px; color: var(--mp); animation: shimmer 1.8s ease-in-out infinite; letter-spacing: 1px; text-shadow: 0 0 10px var(--mg); }
 @keyframes shimmer { 0%,100%{opacity:0.4} 50%{opacity:1} }
 .scroll-end { height: 14px; }
@@ -194,7 +192,7 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [started, setStarted] = useState(false);
   const [saveMsg, setSaveMsg] = useState("");
-  const [usedToday, setUsedToday] = useState(0);
+  const [usedToday, setUsedToday] = useState({ kids: 0, older: 0, family: 0 });
   const [usedTotal, setUsedTotal] = useState(0);
   const [promoCode, setPromoCode] = useState("");
   const [promoMsg, setPromoMsg] = useState("");
@@ -207,16 +205,6 @@ export default function App() {
   const endRef = useRef(null);
 
   useEffect(() => {
-    const loadVoices = () => {
-      const v = window.speechSynthesis.getVoices();
-      if (v.length > 0) setVoices(v);
-    };
-    loadVoices();
-    window.speechSynthesis.onvoiceschanged = loadVoices;
-    return () => { window.speechSynthesis.onvoiceschanged = null; };
-  }, []);
-
-  useEffect(() => {
     const audio = new Audio('https://res.cloudinary.com/dyjvf7ezd/video/upload/App_backgroup_mwkxfb.m4a');
     audio.loop = true;
     audio.volume = 0.25;
@@ -224,6 +212,13 @@ export default function App() {
     const startAudio = () => { audio.play().catch(() => {}); document.removeEventListener('click', startAudio); };
     document.addEventListener('click', startAudio);
     return () => { audio.pause(); audio.src = ''; document.removeEventListener('click', startAudio); };
+  }, []);
+
+  useEffect(() => {
+    const loadVoices = () => { const v = window.speechSynthesis.getVoices(); if (v.length > 0) setVoices(v); };
+    loadVoices();
+    window.speechSynthesis.onvoiceschanged = loadVoices;
+    return () => { window.speechSynthesis.onvoiceschanged = null; };
   }, []);
 
   useEffect(() => {
@@ -239,7 +234,12 @@ export default function App() {
     if (!u) { const g = await storageGet("guest_total") || 0; setUsedTotal(g); return; }
     const profile = await storageGet(`user:${u}`) || {};
     setTier(profile.tier || "free");
-    setUsedToday(await storageGet(`usage:${u}:${todayKey()}`) || 0);
+    const today = todayKey();
+    setUsedToday({
+      kids:   await storageGet(`usage:${u}:${today}:kids`)   || 0,
+      older:  await storageGet(`usage:${u}:${today}:older`)  || 0,
+      family: await storageGet(`usage:${u}:${today}:family`) || 0,
+    });
     setStories(await storageGet(`stories:${u}`) || []);
   };
 
@@ -247,12 +247,17 @@ export default function App() {
     if (!user) return { ok: usedTotal < 3, rem: 3 - usedTotal, max: 3, label: `${Math.max(0, 3 - usedTotal)} of 3 total` };
     const t = TIERS[tier];
     if (!t.daily) return { ok: usedTotal < t.stories, rem: t.stories - usedTotal, max: t.stories, label: `${Math.max(0, t.stories - usedTotal)} of ${t.stories} total` };
-    return { ok: usedToday < t.stories, rem: t.stories - usedToday, max: t.stories, label: `${Math.max(0, t.stories - usedToday)} of ${t.stories} today` };
+    const modeCount = usedToday[mode] || 0;
+    return { ok: modeCount < t.stories, rem: t.stories - modeCount, max: t.stories, label: `${Math.max(0, t.stories - modeCount)} of ${t.stories} today` };
   };
 
   const incUsage = async () => {
     if (!user) { const n = usedTotal + 1; setUsedTotal(n); await storageSet("guest_total", n); }
-    else { const n = usedToday + 1; setUsedToday(n); await storageSet(`usage:${user}:${todayKey()}`, n); }
+    else {
+      const n = (usedToday[mode] || 0) + 1;
+      setUsedToday(prev => ({ ...prev, [mode]: n }));
+      await storageSet(`usage:${user}:${todayKey()}:${mode}`, n);
+    }
   };
 
   const handleAuth = async () => {
@@ -286,9 +291,11 @@ export default function App() {
     if (!user) { setPromoErr("Create an account first to use a promo code."); return; }
     const profile = await storageGet(`user:${user}`) || {};
     await storageSet(`user:${user}`, { ...profile, tier: found.tier });
-    await storageSet(`usage:${user}:${todayKey()}`, 0);
+    await storageSet(`usage:${user}:${todayKey()}:kids`, 0);
+    await storageSet(`usage:${user}:${todayKey()}:older`, 0);
+    await storageSet(`usage:${user}:${todayKey()}:family`, 0);
     setTier(found.tier);
-    setUsedToday(0);
+    setUsedToday({ kids: 0, older: 0, family: 0 });
     setPromoMsg(found.msg);
     setPromoCode("");
     setTimeout(() => { setPromoMsg(""); setScreen("home"); }, 2000);
@@ -312,7 +319,7 @@ export default function App() {
     }, 100);
   };
 
-  const logout = () => { setUser(null); setTier("free"); setStories([]); setUsedTotal(0); setUsedToday(0); setScreen("splash"); setUname(""); setPwd(""); };
+  const logout = () => { setUser(null); setTier("free"); setStories([]); setUsedTotal(0); setUsedToday({ kids: 0, older: 0, family: 0 }); setScreen("splash"); setUname(""); setPwd(""); };
 
   const speakStory = () => {
     if (!chunks.length) return;
@@ -323,7 +330,6 @@ export default function App() {
     const preferred =
       voiceList.find(v => /samantha|karen|zira|victoria|moira|fiona|microsoft zira|google uk english female/i.test(v.name)) ||
       voiceList.find(v => /female/i.test(v.name)) ||
-      voiceList.find(v => v.name.includes("en")) ||
       voiceList[0];
     if (preferred) utter.voice = preferred;
     utter.rate = 0.88;
