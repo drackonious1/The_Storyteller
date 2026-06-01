@@ -317,20 +317,17 @@ export default function App() {
   const speakStory = () => {
     if (!chunks.length) return;
     if (speaking) { window.speechSynthesis.cancel(); setSpeaking(false); return; }
-    window.speechSynthesis.cancel();
     const text = chunks.map(c => c.text).join(". ");
     const utter = new SpeechSynthesisUtterance(text);
     const voiceList = voices.length ? voices : window.speechSynthesis.getVoices();
-    const preferred = voiceList.find(v =>
-      v.name.toLowerCase().includes("female") ||
-      v.name.includes("Samantha") ||
-      v.name.includes("Karen") ||
-      v.name.includes("Zira") ||
-      v.name.includes("Google UK English Female")
+    const gender = voiceGender === "auto" ? (mode === "older" ? "male" : "female") : voiceGender;
+    const preferred = voiceList.find(v => gender === "male"
+      ? (v.name.toLowerCase().includes("male") || v.name.includes("David") || v.name.includes("Daniel") || v.name.includes("James"))
+      : (v.name.toLowerCase().includes("female") || v.name.includes("Samantha") || v.name.includes("Karen") || v.name.includes("Zira"))
     ) || voiceList[0];
     if (preferred) utter.voice = preferred;
     utter.rate = 0.88;
-    utter.pitch = 1.1;
+    utter.pitch = gender === "male" ? 0.85 : 1.1;
     utter.volume = 1;
     utter.onend = () => setSpeaking(false);
     utter.onerror = () => setSpeaking(false);
@@ -625,6 +622,11 @@ export default function App() {
               <button className={`voice-btn ${speaking ? "speaking" : ""}`} onClick={speakStory}>
                 {speaking ? "⏹ Stop" : "🔊 Listen"}
               </button>
+              <select className="voice-sel" value={voiceGender} onChange={e => setVoiceGender(e.target.value)}>
+                <option value="auto">Auto voice</option>
+                <option value="male">♂ Male</option>
+                <option value="female">♀ Female</option>
+              </select>
             </div>
           )}
           {!started ? (
