@@ -313,21 +313,24 @@ export default function App() {
       const voices = window.speechSynthesis.getVoices();
       const gender = voiceGender === "auto" ? (mode === "older" ? "male" : "female") : voiceGender;
       let preferred = null;
+      let isTrueMale = false;
       if (gender === "male") {
         preferred =
           voices.find(v => /david|daniel|james|mark|george|microsoft david|microsoft james/i.test(v.name)) ||
           voices.find(v => /male/i.test(v.name)) ||
           voices.find(v => v.lang && v.lang.startsWith("en") && !/female|zira|samantha|karen|victoria|moira|fiona/i.test(v.name));
+        if (preferred) isTrueMale = true;
+        if (!preferred) preferred = voices.find(v => v.lang && v.lang.startsWith("en")) || voices[0];
       } else {
         preferred =
           voices.find(v => /samantha|karen|zira|victoria|moira|fiona|microsoft zira|google uk english female/i.test(v.name)) ||
           voices.find(v => /female/i.test(v.name)) ||
-          voices.find(v => v.lang && v.lang.startsWith("en"));
+          voices.find(v => v.lang && v.lang.startsWith("en")) ||
+          voices[0];
       }
-      if (!preferred) preferred = voices[0];
       if (preferred) utter.voice = preferred;
-      utter.rate = 0.88;
-      utter.pitch = gender === "male" ? 0.85 : 1.1;
+      utter.rate = gender === "male" ? 0.82 : 0.88;
+      utter.pitch = gender === "male" ? (isTrueMale ? 0.85 : 0.5) : 1.1;
       utter.volume = 1;
       utter.onend = () => setSpeaking(false);
       utter.onerror = () => setSpeaking(false);
