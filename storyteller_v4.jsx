@@ -198,11 +198,11 @@ export default function App() {
   const [promoMsg, setPromoMsg] = useState("");
   const [promoErr, setPromoErr] = useState("");
   const [speaking, setSpeaking] = useState(false);
-  const [voiceGender, setVoiceGender] = useState("auto");
   const [muted, setMuted] = useState(false);
   const [voices, setVoices] = useState([]);
   const audioRef = useRef(null);
   const endRef = useRef(null);
+  const speakingRef = useRef(false);
 
   useEffect(() => {
     const audio = new Audio('https://res.cloudinary.com/dyjvf7ezd/video/upload/App_backgroup_mwkxfb.m4a');
@@ -323,7 +323,12 @@ export default function App() {
 
   const speakStory = () => {
     if (!chunks.length) return;
-    if (speaking) { window.speechSynthesis.cancel(); setSpeaking(false); return; }
+    if (speaking) {
+      window.speechSynthesis.cancel();
+      setSpeaking(false);
+      speakingRef.current = false;
+      return;
+    }
     const text = chunks.map(c => c.text).join(". ");
     const utter = new SpeechSynthesisUtterance(text);
     const voiceList = voices.length ? voices : window.speechSynthesis.getVoices();
@@ -335,10 +340,31 @@ export default function App() {
     utter.rate = 0.88;
     utter.pitch = 1.1;
     utter.volume = 1;
-    utter.onend = () => setSpeaking(false);
-    utter.onerror = () => setSpeaking(false);
+    let scrollInterval = null;
+    utter.onstart = () => {
+      speakingRef.current = true;
+      const scrollEl = document.querySelector('.story-scroll');
+      if (scrollEl) {
+        scrollEl.scrollTop = 0;
+        scrollInterval = setInterval(() => {
+          if (!speakingRef.current) { clearInterval(scrollInterval); return; }
+          scrollEl.scrollTop += 0.8;
+        }, 40);
+      }
+    };
+    utter.onend = () => {
+      setSpeaking(false);
+      speakingRef.current = false;
+      if (scrollInterval) clearInterval(scrollInterval);
+    };
+    utter.onerror = () => {
+      setSpeaking(false);
+      speakingRef.current = false;
+      if (scrollInterval) clearInterval(scrollInterval);
+    };
     window.speechSynthesis.speak(utter);
     setSpeaking(true);
+    speakingRef.current = true;
   };
 
   const saveStory = async () => {
@@ -381,6 +407,7 @@ export default function App() {
       const data = await res.json();
       const text = data.choices?.[0]?.message?.content || "The voice fades into the mist... try once more.";
       setChunks(prev => isNew ? [{ id: Date.now(), text }] : [...prev, { id: Date.now(), text }]);
+      if (isNew) { setTimeout(() => { const el = document.querySelector('.story-scroll'); if (el) el.scrollTop = 0; }, 100); }
       setStarted(true);
       if (isNew) await incUsage();
     } catch { setChunks(prev => [...prev, { id: Date.now(), text: "The connection wavers... breathe and try again." }]); }
