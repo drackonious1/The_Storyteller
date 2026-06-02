@@ -346,10 +346,13 @@ export default function App() {
       const scrollEl = document.querySelector('.story-scroll');
       if (scrollEl) {
         scrollEl.scrollTop = 0;
-        scrollInterval = setInterval(() => {
-          if (!speakingRef.current) { clearInterval(scrollInterval); return; }
-          scrollEl.scrollTop += 0.8;
-        }, 40);
+        setTimeout(() => {
+          if (!speakingRef.current) return;
+          scrollInterval = setInterval(() => {
+            if (!speakingRef.current) { clearInterval(scrollInterval); return; }
+            scrollEl.scrollTop += 0.5;
+          }, 50);
+        }, 7000);
       }
     };
     utter.onend = () => {
