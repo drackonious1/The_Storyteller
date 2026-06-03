@@ -403,9 +403,9 @@ export default function App() {
     const allText = chunks.map(c => c.text).join("\n\n");
     const prompt = isNew ? `Begin a new story. Speak as ${m.teller}.` : `Continue and deepen this story:\n\n${allText}`;
     try {
-      const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-        method: "POST", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${import.meta.env.VITE_GROQ_API_KEY}` },
-        body: JSON.stringify({ model: "llama-3.3-70b-versatile", max_tokens: 1000, messages: [{ role: "system", content: SYSTEMS[mode] }, { role: "user", content: prompt }] })
+      const res = await fetch("/api/story", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: [{ role: "system", content: SYSTEMS[mode] }, { role: "user", content: prompt }] })
       });
       const data = await res.json();
       const text = data.choices?.[0]?.message?.content || "The voice fades into the mist... try once more.";
