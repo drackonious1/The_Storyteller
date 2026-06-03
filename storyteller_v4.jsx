@@ -350,9 +350,9 @@ export default function App() {
           if (!speakingRef.current) return;
           scrollInterval = setInterval(() => {
             if (!speakingRef.current) { clearInterval(scrollInterval); return; }
-            scrollEl.scrollTop += 0.5;
-          }, 50);
-        }, 7000);
+            scrollEl.scrollTop += 0.65;
+          }, 45);
+        }, 4000);
       }
     };
     utter.onend = () => {
