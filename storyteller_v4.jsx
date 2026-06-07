@@ -198,13 +198,13 @@ export default function App() {
   const [promoMsg, setPromoMsg] = useState("");
   const [promoErr, setPromoErr] = useState("");
   const VOICES = [
-    { id: 'UbzLjUV0sz06BaK12fJK', name: 'Eloquent (F)' },
-    { id: '9gB6fhbEaYv6yh0oS2bC', name: 'Whispering (F)' },
-    { id: 'HZTk7bUIkiI7yT7FKH4h', name: 'Brad (M)' },
-    { id: '17JdVkQHD6PE3HPohzr2', name: 'Trevor (M)' },
+    { id: 'https://res.cloudinary.com/dyjvf7ezd/video/upload/voice_preview_we_-_eloquent_and_demure_ze3r42.mp3', name: 'Eloquent (F)' },
+    { id: 'https://res.cloudinary.com/dyjvf7ezd/video/upload/voice_preview_whispering_girl_fwjlqm.mp3', name: 'Whispering (F)' },
+    { id: 'https://res.cloudinary.com/dyjvf7ezd/video/upload/voice_preview_brad_-_meditation_relaxation_lljodp.mp3', name: 'Brad (M)' },
+    { id: 'https://res.cloudinary.com/dyjvf7ezd/video/upload/voice_preview_trevor_whisper_-_asmr_kmtnnf.mp3', name: 'Trevor (M)' },
   ];
 
-  const [selectedVoice, setSelectedVoice] = useState('UbzLjUV0sz06BaK12fJK');
+  const [selectedVoice, setSelectedVoice] = useState('https://res.cloudinary.com/dyjvf7ezd/video/upload/voice_preview_we_-_eloquent_and_demure_ze3r42.mp3');
   const [speaking, setSpeaking] = useState(false);
   const [muted, setMuted] = useState(false);
   const [voices, setVoices] = useState([]);
@@ -332,21 +332,11 @@ export default function App() {
   const speakStory = async () => {
     if (!chunks.length) return;
     if (speaking) { setSpeaking(false); return; }
-    const text = chunks[0].text.split(/\n\n+/)[0].substring(0, 2500);
     setSpeaking(true);
-    try {
-      const res = await fetch('/api/story', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'speak', text, voiceId: selectedVoice })
-      });
-      const data = await res.json();
-      if (data.audio) {
-        const audio = new Audio(`data:audio/mpeg;base64,${data.audio}`);
-        audio.play();
-        audio.onended = () => setSpeaking(false);
-      }
-    } catch { setSpeaking(false); }
+    const audio = new Audio(selectedVoice);
+    audio.play();
+    audio.onended = () => setSpeaking(false);
+    audio.onerror = () => setSpeaking(false);
   };
 
   const saveStory = async () => {
