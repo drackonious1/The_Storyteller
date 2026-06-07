@@ -328,16 +328,24 @@ export default function App() {
 
   const logout = () => { setUser(null); setTier("free"); setStories([]); setUsedTotal(0); setUsedToday({ kids: 0, older: 0, family: 0 }); setScreen("splash"); setUname(""); setPwd(""); };
 
+  const voiceRef = useRef(null);
+
   const speakStory = async () => {
     if (!chunks.length) return;
-    if (speaking) { setSpeaking(false); return; }
+    if (speaking) {
+      if (voiceRef.current) { voiceRef.current.pause(); voiceRef.current = null; }
+      setSpeaking(false);
+      return;
+    }
     const text = chunks.map(c => c.text).join(' ').substring(0, 15000);
     setSpeaking(true);
     try {
       const audio = await window.puter.ai.txt2speech(text, { provider: 'xai', voice: selectedVoice });
+      if (voiceRef.current) { voiceRef.current.pause(); }
+      voiceRef.current = audio;
       audio.play();
-      audio.onended = () => setSpeaking(false);
-      audio.onerror = () => setSpeaking(false);
+      audio.onended = () => { setSpeaking(false); voiceRef.current = null; };
+      audio.onerror = () => { setSpeaking(false); voiceRef.current = null; };
     } catch (e) {
       console.error('TTS error:', e);
       setSpeaking(false);
