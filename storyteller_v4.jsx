@@ -197,6 +197,14 @@ export default function App() {
   const [promoCode, setPromoCode] = useState("");
   const [promoMsg, setPromoMsg] = useState("");
   const [promoErr, setPromoErr] = useState("");
+  const VOICES = [
+    { id: 'UbzLjUV0sz06BaK12fJK', name: 'Eloquent (F)' },
+    { id: '9gB6fhbEaYv6yh0oS2bC', name: 'Whispering (F)' },
+    { id: 'HZTk7bUIkiI7yT7FKH4h', name: 'Brad (M)' },
+    { id: '17JdVkQHD6PE3HPohzr2', name: 'Trevor (M)' },
+  ];
+
+  const [selectedVoice, setSelectedVoice] = useState('UbzLjUV0sz06BaK12fJK');
   const [speaking, setSpeaking] = useState(false);
   const [muted, setMuted] = useState(false);
   const [voices, setVoices] = useState([]);
@@ -321,53 +329,24 @@ export default function App() {
 
   const logout = () => { setUser(null); setTier("free"); setStories([]); setUsedTotal(0); setUsedToday({ kids: 0, older: 0, family: 0 }); setScreen("splash"); setUname(""); setPwd(""); };
 
-  const speakStory = () => {
+  const speakStory = async () => {
     if (!chunks.length) return;
-    if (speaking) {
-      window.speechSynthesis.cancel();
-      setSpeaking(false);
-      speakingRef.current = false;
-      return;
-    }
-    const text = chunks.map(c => c.text).join(". ");
-    const utter = new SpeechSynthesisUtterance(text);
-    const voiceList = voices.length ? voices : window.speechSynthesis.getVoices();
-    const preferred =
-      voiceList.find(v => /samantha|karen|zira|victoria|moira|fiona|microsoft zira|google uk english female/i.test(v.name)) ||
-      voiceList.find(v => /female/i.test(v.name)) ||
-      voiceList[0];
-    if (preferred) utter.voice = preferred;
-    utter.rate = 0.88;
-    utter.pitch = 1.1;
-    utter.volume = 1;
-    let scrollInterval = null;
-    utter.onstart = () => {
-      speakingRef.current = true;
-      const scrollEl = document.querySelector('.story-scroll');
-      if (scrollEl) {
-        scrollEl.scrollTop = 0;
-        setTimeout(() => {
-          if (!speakingRef.current) return;
-          scrollInterval = setInterval(() => {
-            if (!speakingRef.current) { clearInterval(scrollInterval); return; }
-            scrollEl.scrollTop += 0.65;
-          }, 45);
-        }, 4000);
-      }
-    };
-    utter.onend = () => {
-      setSpeaking(false);
-      speakingRef.current = false;
-      if (scrollInterval) clearInterval(scrollInterval);
-    };
-    utter.onerror = () => {
-      setSpeaking(false);
-      speakingRef.current = false;
-      if (scrollInterval) clearInterval(scrollInterval);
-    };
-    window.speechSynthesis.speak(utter);
+    if (speaking) { setSpeaking(false); return; }
+    const text = chunks.map(c => c.text).join(" ");
     setSpeaking(true);
-    speakingRef.current = true;
+    try {
+      const res = await fetch('/api/story', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'speak', text, voiceId: selectedVoice })
+      });
+      const data = await res.json();
+      if (data.audio) {
+        const audio = new Audio(`data:audio/mpeg;base64,${data.audio}`);
+        audio.play();
+        audio.onended = () => setSpeaking(false);
+      }
+    } catch { setSpeaking(false); }
   };
 
   const saveStory = async () => {
@@ -661,6 +640,10 @@ export default function App() {
               <button className={`voice-btn ${speaking ? "speaking" : ""}`} onClick={speakStory}>
                 {speaking ? "⏹ Stop" : "🔊 Listen"}
               </button>
+              <select className="voice-sel" value={selectedVoice} onChange={e => setSelectedVoice(e.target.value)}
+                style={{ background: "var(--ms)", border: "1px solid var(--border)", color: "var(--mt)", padding: "8px 10px", borderRadius: 10, fontFamily: "Georgia,serif", fontSize: 11, cursor: "pointer" }}>
+                {VOICES.map(v => <option key={v.id} value={v.id}>{v.name}</option>)}
+              </select>
             </div>
           )}
           {!started ? (
