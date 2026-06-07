@@ -328,28 +328,25 @@ export default function App() {
 
   const logout = () => { setUser(null); setTier("free"); setStories([]); setUsedTotal(0); setUsedToday({ kids: 0, older: 0, family: 0 }); setScreen("splash"); setUname(""); setPwd(""); };
 
-  const voiceRef = useRef(null);
-
-  const speakStory = async () => {
+  const speakStory = () => {
     if (!chunks.length) return;
-    if (speaking) {
-      if (voiceRef.current) { voiceRef.current.pause(); voiceRef.current = null; }
-      setSpeaking(false);
-      return;
-    }
-    const text = chunks.map(c => c.text).join(' ').substring(0, 15000);
+    if (speaking) { window.speechSynthesis.cancel(); setSpeaking(false); return; }
+    const text = chunks.map(c => c.text).join(' ');
+    const utter = new SpeechSynthesisUtterance(text);
+    const allVoices = window.speechSynthesis.getVoices();
+    const preferred =
+      allVoices.find(v => /samantha|karen|zira|victoria|moira|fiona|microsoft zira|google uk english female/i.test(v.name)) ||
+      allVoices.find(v => /female/i.test(v.name)) ||
+      allVoices.find(v => v.lang && v.lang.startsWith('en')) ||
+      allVoices[0];
+    if (preferred) utter.voice = preferred;
+    utter.rate = 0.82;
+    utter.pitch = 1.05;
+    utter.volume = 1;
+    utter.onend = () => setSpeaking(false);
+    utter.onerror = () => setSpeaking(false);
+    window.speechSynthesis.speak(utter);
     setSpeaking(true);
-    try {
-      const audio = await window.puter.ai.txt2speech(text, { provider: 'xai', voice: selectedVoice });
-      if (voiceRef.current) { voiceRef.current.pause(); }
-      voiceRef.current = audio;
-      audio.play();
-      audio.onended = () => { setSpeaking(false); voiceRef.current = null; };
-      audio.onerror = () => { setSpeaking(false); voiceRef.current = null; };
-    } catch (e) {
-      console.error('TTS error:', e);
-      setSpeaking(false);
-    }
   };
 
   const saveStory = async () => {
