@@ -331,12 +331,21 @@ export default function App() {
 
   const speakStory = async () => {
     if (!chunks.length) return;
-    if (speaking) { setSpeaking(false); return; }
+    if (speaking) {
+      window.speechSynthesis?.cancel();
+      setSpeaking(false);
+      return;
+    }
+    const text = chunks.map(c => c.text).join(' ');
     setSpeaking(true);
-    const audio = new Audio(selectedVoice);
-    audio.play();
-    audio.onended = () => setSpeaking(false);
-    audio.onerror = () => setSpeaking(false);
+    try {
+      const audio = await window.puter.ai.txt2speech(text, { engine: 'neural' });
+      audio.play();
+      audio.onended = () => setSpeaking(false);
+      audio.onerror = () => setSpeaking(false);
+    } catch {
+      setSpeaking(false);
+    }
   };
 
   const saveStory = async () => {
