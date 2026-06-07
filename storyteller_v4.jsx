@@ -198,13 +198,12 @@ export default function App() {
   const [promoMsg, setPromoMsg] = useState("");
   const [promoErr, setPromoErr] = useState("");
   const VOICES = [
-    { id: 'https://res.cloudinary.com/dyjvf7ezd/video/upload/voice_preview_we_-_eloquent_and_demure_ze3r42.mp3', name: 'Eloquent (F)' },
-    { id: 'https://res.cloudinary.com/dyjvf7ezd/video/upload/voice_preview_whispering_girl_fwjlqm.mp3', name: 'Whispering (F)' },
-    { id: 'https://res.cloudinary.com/dyjvf7ezd/video/upload/voice_preview_brad_-_meditation_relaxation_lljodp.mp3', name: 'Brad (M)' },
-    { id: 'https://res.cloudinary.com/dyjvf7ezd/video/upload/voice_preview_trevor_whisper_-_asmr_kmtnnf.mp3', name: 'Trevor (M)' },
+    { id: 'ara', name: 'Ara — Warm (F)' },
+    { id: 'eve', name: 'Eve — Energetic (F)' },
+    { id: 'sal', name: 'Sal — Smooth (M)' },
+    { id: 'leo', name: 'Leo — Strong (M)' },
   ];
-
-  const [selectedVoice, setSelectedVoice] = useState('https://res.cloudinary.com/dyjvf7ezd/video/upload/voice_preview_we_-_eloquent_and_demure_ze3r42.mp3');
+  const [selectedVoice, setSelectedVoice] = useState('ara');
   const [speaking, setSpeaking] = useState(false);
   const [muted, setMuted] = useState(false);
   const [voices, setVoices] = useState([]);
@@ -331,19 +330,16 @@ export default function App() {
 
   const speakStory = async () => {
     if (!chunks.length) return;
-    if (speaking) {
-      window.speechSynthesis?.cancel();
-      setSpeaking(false);
-      return;
-    }
-    const text = chunks.map(c => c.text).join(' ');
+    if (speaking) { setSpeaking(false); return; }
+    const text = chunks.map(c => c.text).join(' ').substring(0, 15000);
     setSpeaking(true);
     try {
-      const audio = await window.puter.ai.txt2speech(text, { engine: 'neural' });
+      const audio = await window.puter.ai.txt2speech(text, { provider: 'xai', voice: selectedVoice });
       audio.play();
       audio.onended = () => setSpeaking(false);
       audio.onerror = () => setSpeaking(false);
-    } catch {
+    } catch (e) {
+      console.error('TTS error:', e);
       setSpeaking(false);
     }
   };
