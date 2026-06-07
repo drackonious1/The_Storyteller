@@ -332,7 +332,7 @@ export default function App() {
   const speakStory = async () => {
     if (!chunks.length) return;
     if (speaking) { setSpeaking(false); return; }
-    const text = chunks.map(c => c.text).join(" ");
+    const text = chunks[0].text.split(/\n\n+/)[0].substring(0, 2500);
     setSpeaking(true);
     try {
       const res = await fetch('/api/story', {
