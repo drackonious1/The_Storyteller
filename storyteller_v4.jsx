@@ -640,10 +640,6 @@ export default function App() {
               <button className={`voice-btn ${speaking ? "speaking" : ""}`} onClick={speakStory}>
                 {speaking ? "⏹ Stop" : "🔊 Listen"}
               </button>
-              <select className="voice-sel" value={selectedVoice} onChange={e => setSelectedVoice(e.target.value)}
-                style={{ background: "var(--ms)", border: "1px solid var(--border)", color: "var(--mt)", padding: "8px 10px", borderRadius: 10, fontFamily: "Georgia,serif", fontSize: 11, cursor: "pointer" }}>
-                {VOICES.map(v => <option key={v.id} value={v.id}>{v.name}</option>)}
-              </select>
             </div>
           )}
           {!started ? (
