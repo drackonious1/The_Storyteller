@@ -198,12 +198,12 @@ export default function App() {
   const [promoMsg, setPromoMsg] = useState("");
   const [promoErr, setPromoErr] = useState("");
   const VOICES = [
-    { id: 'ara', name: 'Ara — Warm (F)' },
-    { id: 'eve', name: 'Eve — Energetic (F)' },
-    { id: 'sal', name: 'Sal — Smooth (M)' },
-    { id: 'leo', name: 'Leo — Strong (M)' },
+    { id: 'UbzLjUV0sz06BaK12fJK', name: 'Eloquent (F)' },
+    { id: '9gB6fhbEaYv6yh0oS2bC', name: 'Whispering (F)' },
+    { id: 'HZTk7bUIkiI7yT7FKH4h', name: 'Brad (M)' },
+    { id: '17JdVkQHD6PE3HPohzr2', name: 'Trevor (M)' },
   ];
-  const [selectedVoice, setSelectedVoice] = useState('ara');
+  const [selectedVoice, setSelectedVoice] = useState('UbzLjUV0sz06BaK12fJK');
   const [speaking, setSpeaking] = useState(false);
   const [muted, setMuted] = useState(false);
   const [voices, setVoices] = useState([]);
@@ -328,25 +328,25 @@ export default function App() {
 
   const logout = () => { setUser(null); setTier("free"); setStories([]); setUsedTotal(0); setUsedToday({ kids: 0, older: 0, family: 0 }); setScreen("splash"); setUname(""); setPwd(""); };
 
-  const speakStory = () => {
+  const speakStory = async () => {
     if (!chunks.length) return;
-    if (speaking) { window.speechSynthesis.cancel(); setSpeaking(false); return; }
-    const text = chunks.map(c => c.text).join(' ');
-    const utter = new SpeechSynthesisUtterance(text);
-    const allVoices = window.speechSynthesis.getVoices();
-    const preferred =
-      allVoices.find(v => /samantha|karen|zira|victoria|moira|fiona|microsoft zira|google uk english female/i.test(v.name)) ||
-      allVoices.find(v => /female/i.test(v.name)) ||
-      allVoices.find(v => v.lang && v.lang.startsWith('en')) ||
-      allVoices[0];
-    if (preferred) utter.voice = preferred;
-    utter.rate = 0.82;
-    utter.pitch = 1.05;
-    utter.volume = 1;
-    utter.onend = () => setSpeaking(false);
-    utter.onerror = () => setSpeaking(false);
-    window.speechSynthesis.speak(utter);
+    if (speaking) { setSpeaking(false); return; }
+    const text = chunks.map(c => c.text).join(' ').substring(0, 2500);
     setSpeaking(true);
+    try {
+      const res = await fetch('/api/story', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'speak', text, voiceId: selectedVoice })
+      });
+      const data = await res.json();
+      if (data.audio) {
+        const audio = new Audio(`data:audio/mpeg;base64,${data.audio}`);
+        audio.play();
+        audio.onended = () => setSpeaking(false);
+        audio.onerror = () => setSpeaking(false);
+      } else { setSpeaking(false); }
+    } catch { setSpeaking(false); }
   };
 
   const saveStory = async () => {
@@ -640,6 +640,10 @@ export default function App() {
               <button className={`voice-btn ${speaking ? "speaking" : ""}`} onClick={speakStory}>
                 {speaking ? "⏹ Stop" : "🔊 Listen"}
               </button>
+              <select value={selectedVoice} onChange={e => setSelectedVoice(e.target.value)}
+                style={{ background: "var(--ms)", border: "1px solid var(--border)", color: "var(--mt)", padding: "8px 10px", borderRadius: 10, fontFamily: "Georgia,serif", fontSize: 11, cursor: "pointer" }}>
+                {VOICES.map(v => <option key={v.id} value={v.id}>{v.name}</option>)}
+              </select>
             </div>
           )}
           {!started ? (
