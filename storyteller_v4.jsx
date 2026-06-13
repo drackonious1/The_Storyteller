@@ -71,6 +71,8 @@ const TIER_PERKS = {
 const css = `
 * { box-sizing: border-box; margin: 0; padding: 0; }
 .app { background: var(--bg, #070412); min-height: 640px; display: flex; flex-direction: column; border-radius: 18px; overflow: hidden; font-family: Georgia,'Book Antiqua',Palatino,serif; color: var(--mt, #C4A0FF); transition: background 0.6s ease; position: relative; }
+.app::before { content: ''; position: absolute; inset: -40%; z-index: 0; pointer-events: none; opacity: 0.12; filter: blur(45px); background: radial-gradient(38% 30% at 28% 24%, var(--mg) 0%, transparent 62%), radial-gradient(34% 26% at 74% 72%, var(--mg) 0%, transparent 62%); animation: auroradrift 28s ease-in-out infinite alternate; }
+@keyframes auroradrift { 0% { transform: translate(-4%, -3%) rotate(0deg) scale(1); } 50% { transform: translate(5%, 4%) rotate(7deg) scale(1.12); } 100% { transform: translate(-2%, 6%) rotate(-5deg) scale(1.06); } }
 .screen { display: flex; flex-direction: column; flex: 1; animation: fadein 0.45s ease; }
 @keyframes fadein { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
 .ff { position: absolute; border-radius: 50%; background: var(--mp, #7B2FFF); box-shadow: 0 0 6px 2px var(--mg, rgba(123,47,255,0.55)); animation: ffloat var(--fd) ease-in-out infinite var(--fdl), fftw var(--ftw) ease-in-out infinite; pointer-events: none; z-index: 0; }
@@ -337,33 +339,15 @@ export default function App() {
     }
     const text = chunks.map(c => c.text).join(' ').substring(0, 2500);
     setSpeaking(true);
-    const playAudio = (audio) => {
+    try {
+      // Olivia - free Australian voice via Puter (AWS Polly neural), client-side. No premium provider, no paywall.
+      const audio = await window.puter.ai.txt2speech(text, { voice: 'Olivia', engine: 'neural', language: 'en-AU' });
       window._ttsAudio = audio;
       audio.onended = () => setSpeaking(false);
       audio.play();
-    };
-    try {
-      // Premium ElevenLabs voice via Puter — runs in the user's browser, so no datacenter 401
-      const audio = await window.puter.ai.txt2speech(text, {
-        provider: 'elevenlabs',
-        voice: selectedVoice,
-        model: 'eleven_multilingual_v2'
-      });
-      playAudio(audio);
-    } catch (e1) {
-      console.warn('ElevenLabs voice unavailable via Puter, falling back to Aussie Polly voice:', e1);
-      try {
-        const sel = VOICES.find(v => v.id === selectedVoice);
-        const isMale = sel ? /\(M\)/.test(sel.name) : false;
-        const aussieOpts = isMale
-          ? { voice: 'Russell', language: 'en-AU' }
-          : { voice: 'Olivia', engine: 'neural', language: 'en-AU' };
-        const audio = await window.puter.ai.txt2speech(text, aussieOpts);
-        playAudio(audio);
-      } catch (e2) {
-        console.error('TTS failed:', e2);
-        setSpeaking(false);
-      }
+    } catch (e) {
+      console.error('Olivia TTS failed:', e);
+      setSpeaking(false);
     }
   };
 
@@ -658,10 +642,6 @@ export default function App() {
               <button className={`voice-btn ${speaking ? "speaking" : ""}`} onClick={speakStory}>
                 {speaking ? "⏹ Stop" : "🔊 Listen"}
               </button>
-              <select value={selectedVoice} onChange={e => setSelectedVoice(e.target.value)}
-                style={{ background: "var(--ms)", border: "1px solid var(--border)", color: "var(--mt)", padding: "8px 10px", borderRadius: 10, fontFamily: "Georgia,serif", fontSize: 11, cursor: "pointer" }}>
-                {VOICES.map(v => <option key={v.id} value={v.id}>{v.name}</option>)}
-              </select>
             </div>
           )}
           {!started ? (
