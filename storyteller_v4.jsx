@@ -330,23 +330,41 @@ export default function App() {
 
   const speakStory = async () => {
     if (!chunks.length) return;
-    if (speaking) { setSpeaking(false); return; }
+    if (speaking) {
+      if (window._ttsAudio) { try { window._ttsAudio.pause(); } catch (e) {} }
+      setSpeaking(false);
+      return;
+    }
     const text = chunks.map(c => c.text).join(' ').substring(0, 2500);
     setSpeaking(true);
+    const playAudio = (audio) => {
+      window._ttsAudio = audio;
+      audio.onended = () => setSpeaking(false);
+      audio.play();
+    };
     try {
-      const res = await fetch('/api/story', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'speak', text, voiceId: selectedVoice })
+      // Premium ElevenLabs voice via Puter — runs in the user's browser, so no datacenter 401
+      const audio = await window.puter.ai.txt2speech(text, {
+        provider: 'elevenlabs',
+        voice: selectedVoice,
+        model: 'eleven_multilingual_v2'
       });
-      const data = await res.json();
-      if (data.audio) {
-        const audio = new Audio(`data:audio/mpeg;base64,${data.audio}`);
-        audio.play();
-        audio.onended = () => setSpeaking(false);
-        audio.onerror = () => setSpeaking(false);
-      } else { setSpeaking(false); }
-    } catch { setSpeaking(false); }
+      playAudio(audio);
+    } catch (e1) {
+      console.warn('ElevenLabs voice unavailable via Puter, falling back to Aussie Polly voice:', e1);
+      try {
+        const sel = VOICES.find(v => v.id === selectedVoice);
+        const isMale = sel ? /\(M\)/.test(sel.name) : false;
+        const aussieOpts = isMale
+          ? { voice: 'Russell', language: 'en-AU' }
+          : { voice: 'Olivia', engine: 'neural', language: 'en-AU' };
+        const audio = await window.puter.ai.txt2speech(text, aussieOpts);
+        playAudio(audio);
+      } catch (e2) {
+        console.error('TTS failed:', e2);
+        setSpeaking(false);
+      }
+    }
   };
 
   const saveStory = async () => {
