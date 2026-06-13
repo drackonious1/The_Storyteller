@@ -139,7 +139,7 @@ const css = `
 .card-meta { font-size: 10px; color: var(--mt); opacity: 0.28; margin-top: 4px; }
 .badge { display: inline-block; font-size: 9px; letter-spacing: 1px; text-transform: uppercase; padding: 2px 8px; border-radius: 4px; margin-bottom: 5px; border: 1px solid var(--border); background: var(--ms); color: var(--mp); box-shadow: 0 0 6px var(--ms); }
 .empty { text-align: center; padding: 32px 20px; font-style: italic; color: var(--mt); opacity: 0.28; font-size: 13px; line-height: 1.8; }
-.story-scroll { flex: 1; overflow-y: auto; min-height: 300px; scrollbar-width: thin; scrollbar-color: var(--mp) transparent; position: relative; z-index: 1; }
+.story-scroll { flex: 1; overflow-y: auto; min-height: 300px; max-height: 420px; scrollbar-width: thin; scrollbar-color: var(--mp) transparent; position: relative; z-index: 1; }
 .story-scroll::-webkit-scrollbar { width: 3px; }
 .story-scroll::-webkit-scrollbar-thumb { background: var(--mp); border-radius: 2px; }
 .story-landing { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 340px; padding: 30px 24px; gap: 18px; text-align: center; }
