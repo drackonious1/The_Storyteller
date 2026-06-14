@@ -341,13 +341,24 @@ export default function App() {
     const text = chunks.map(c => c.text).join(' ').substring(0, 2500);
     setSpeaking(true);
     try {
-      // Olivia - free Australian voice via Puter (AWS Polly neural), client-side. No premium provider, no paywall.
-      const audio = await window.puter.ai.txt2speech(text, { voice: 'Olivia', engine: 'neural', language: 'en-AU' });
-      window._ttsAudio = audio;
-      audio.onended = () => setSpeaking(false);
-      audio.play();
+      // Real ElevenLabs voice via the /api/story serverless function (key stays safe in Vercel, never in the client). No Puter, no popup.
+      const res = await fetch('/api/story', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'speak', text, voiceId: selectedVoice })
+      });
+      const data = await res.json();
+      if (data.audio) {
+        const audio = new Audio(`data:audio/mpeg;base64,${data.audio}`);
+        window._ttsAudio = audio;
+        audio.onended = () => setSpeaking(false);
+        audio.onerror = () => setSpeaking(false);
+        audio.play();
+      } else {
+        setSpeaking(false);
+      }
     } catch (e) {
-      console.error('Olivia TTS failed:', e);
+      console.error('ElevenLabs voice failed:', e);
       setSpeaking(false);
     }
   };
