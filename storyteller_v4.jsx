@@ -73,6 +73,7 @@ const css = `
 .app { background: var(--bg, #070412); min-height: 640px; display: flex; flex-direction: column; border-radius: 18px; overflow: hidden; font-family: Georgia,'Book Antiqua',Palatino,serif; color: var(--mt, #C4A0FF); transition: background 0.6s ease; position: relative; }
 .app::before { content: ''; position: absolute; inset: -40%; z-index: 0; pointer-events: none; opacity: 0.12; filter: blur(45px); background: radial-gradient(38% 30% at 28% 24%, var(--mg) 0%, transparent 62%), radial-gradient(34% 26% at 74% 72%, var(--mg) 0%, transparent 62%); animation: auroradrift 28s ease-in-out infinite alternate; }
 @keyframes auroradrift { 0% { transform: translate(-4%, -3%) rotate(0deg) scale(1); } 50% { transform: translate(5%, 4%) rotate(7deg) scale(1.12); } 100% { transform: translate(-2%, 6%) rotate(-5deg) scale(1.06); } }
+.app-story { height: 100vh; height: 100dvh; }
 .screen { display: flex; flex-direction: column; flex: 1; animation: fadein 0.45s ease; }
 @keyframes fadein { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
 .ff { position: absolute; border-radius: 50%; background: var(--mp, #7B2FFF); box-shadow: 0 0 6px 2px var(--mg, rgba(123,47,255,0.55)); animation: ffloat var(--fd) ease-in-out infinite var(--fdl), fftw var(--ftw) ease-in-out infinite; pointer-events: none; z-index: 0; }
@@ -139,7 +140,7 @@ const css = `
 .card-meta { font-size: 10px; color: var(--mt); opacity: 0.28; margin-top: 4px; }
 .badge { display: inline-block; font-size: 9px; letter-spacing: 1px; text-transform: uppercase; padding: 2px 8px; border-radius: 4px; margin-bottom: 5px; border: 1px solid var(--border); background: var(--ms); color: var(--mp); box-shadow: 0 0 6px var(--ms); }
 .empty { text-align: center; padding: 32px 20px; font-style: italic; color: var(--mt); opacity: 0.28; font-size: 13px; line-height: 1.8; }
-.story-scroll { flex: 1; overflow-y: auto; min-height: 300px; max-height: 420px; scrollbar-width: thin; scrollbar-color: var(--mp) transparent; position: relative; z-index: 1; }
+.story-scroll { flex: 1; overflow-y: auto; min-height: 0; scrollbar-width: thin; scrollbar-color: var(--mp) transparent; position: relative; z-index: 1; }
 .story-scroll::-webkit-scrollbar { width: 3px; }
 .story-scroll::-webkit-scrollbar-thumb { background: var(--mp); border-radius: 2px; }
 .story-landing { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 340px; padding: 30px 24px; gap: 18px; text-align: center; }
@@ -602,7 +603,7 @@ export default function App() {
   );
 
   if (screen === "story") return (
-    <div className="app" style={{ ...cssVars }}>
+    <div className="app app-story" style={{ ...cssVars }}>
       <style>{css}</style>
       <Fireflies count={10} />
       <div className="screen">
