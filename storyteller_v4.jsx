@@ -74,6 +74,8 @@ const css = `
 .app::before { content: ''; position: absolute; inset: -40%; z-index: 0; pointer-events: none; opacity: 0.12; filter: blur(45px); background: radial-gradient(38% 30% at 28% 24%, var(--mg) 0%, transparent 62%), radial-gradient(34% 26% at 74% 72%, var(--mg) 0%, transparent 62%); animation: auroradrift 28s ease-in-out infinite alternate; }
 @keyframes auroradrift { 0% { transform: translate(-4%, -3%) rotate(0deg) scale(1); } 50% { transform: translate(5%, 4%) rotate(7deg) scale(1.12); } 100% { transform: translate(-2%, 6%) rotate(-5deg) scale(1.06); } }
 .app-story { height: 100vh; height: 100dvh; min-height: 0; }
+.app-story .screen { min-height: 0; }
+.app-story .controls { flex-shrink: 0; }
 .screen { display: flex; flex-direction: column; flex: 1; animation: fadein 0.45s ease; }
 @keyframes fadein { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
 .ff { position: absolute; border-radius: 50%; background: var(--mp, #7B2FFF); box-shadow: 0 0 6px 2px var(--mg, rgba(123,47,255,0.55)); animation: ffloat var(--fd) ease-in-out infinite var(--fdl), fftw var(--ftw) ease-in-out infinite; pointer-events: none; z-index: 0; }
