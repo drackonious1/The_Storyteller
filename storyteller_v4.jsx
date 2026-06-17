@@ -209,7 +209,6 @@ export default function App() {
     { id: 'UbzLjUV0sz06BaK12fJK', name: 'Eloquent (F)' },
     { id: '9gB6fhbEaYv6yh0oS2bC', name: 'Whispering (F)' },
     { id: 'HZTk7bUIkiI7yT7FKH4h', name: 'Brad (M)' },
-    { id: '17JdVkQHD6PE3HPohzr2', name: 'Trevor (M)' },
   ];
   const [selectedVoice, setSelectedVoice] = useState('UbzLjUV0sz06BaK12fJK');
   const [speaking, setSpeaking] = useState(false);
@@ -347,62 +346,40 @@ export default function App() {
   const speakStory = async () => {
     if (!chunks.length) return;
     if (speaking) {
-      window._ttsStop = true;
       if (window._ttsAudio) { try { window._ttsAudio.pause(); } catch (e) {} }
       setSpeaking(false);
       return;
     }
-    const fullText = chunks.map(c => c.text).join(' ').substring(0, 2500);
-    // Split into short segments at sentence boundaries (~360 chars). Each segment is voiced fresh at
-    // full strength, so the voice never fades on a long read, and only the first segment delays playback.
-    const sentences = fullText.match(/[^.!?]+[.!?]+|\S[^.!?]*$/g) || [fullText];
-    const parts = [];
-    let buf = '';
-    for (const s of sentences) {
-      if (buf && (buf + ' ' + s).length > 360) { parts.push(buf.trim()); buf = s; }
-      else { buf = buf ? buf + ' ' + s : s; }
-    }
-    if (buf.trim()) parts.push(buf.trim());
-    if (!parts.length) return;
+    const text = chunks.map(c => c.text).join(' ').substring(0, 2500);
     setSpeaking(true);
-    window._ttsStop = false;
-    const fetchSeg = async (t) => {
-      try {
-        const res = await fetch('/api/story', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'speak', text: t, voiceId: selectedVoice }) });
-        const data = await res.json();
-        if (!data || !data.audio) return null;
-        const bc = atob(data.audio);
-        const bytes = new Uint8Array(bc.length);
-        for (let i = 0; i < bc.length; i++) bytes[i] = bc.charCodeAt(i);
-        return URL.createObjectURL(new Blob([bytes], { type: 'audio/mpeg' }));
-      } catch (e) { return null; }
-    };
     try {
-      let nextUrl = fetchSeg(parts[0]);
-      for (let i = 0; i < parts.length; i++) {
-        if (window._ttsStop) break;
-        const url = await nextUrl;
-        if (window._ttsStop) { if (url) URL.revokeObjectURL(url); break; }
-        nextUrl = (i + 1 < parts.length) ? fetchSeg(parts[i + 1]) : Promise.resolve(null);
-        if (!url) continue;
-        await new Promise((resolve) => {
-          const audio = new Audio(url);
-          window._ttsAudio = audio;
-          audio.volume = 1.0;
-          let done = false;
-          const finish = () => { if (done) return; done = true; URL.revokeObjectURL(url); resolve(); };
-          const base = i / parts.length, span = 1 / parts.length;
-          audio.ontimeupdate = () => { const sc = document.querySelector('.story-scroll'); if (sc && audio.duration) { const max = sc.scrollHeight - sc.clientHeight; if (max > 0) sc.scrollTop = (base + span * (audio.currentTime / audio.duration)) * max; } };
-          audio.onended = finish;
-          audio.onerror = finish;
-          audio.onpause = () => { if (window._ttsStop) finish(); };
-          audio.play().catch(() => finish());
-        });
+      // Real ElevenLabs voice via the /api/story serverless function (key stays safe in Vercel, never in the client). No Puter, no popup.
+      const res = await fetch('/api/story', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'speak', text, voiceId: selectedVoice })
+      });
+      const data = await res.json();
+      if (data && data.audio) {
+        const byteChars = atob(data.audio);
+        const bytes = new Uint8Array(byteChars.length);
+        for (let i = 0; i < byteChars.length; i++) bytes[i] = byteChars.charCodeAt(i);
+        const blob = new Blob([bytes], { type: 'audio/mpeg' });
+        const url = URL.createObjectURL(blob);
+        const audio = new Audio(url);
+        window._ttsAudio = audio;
+        audio.volume = 1.0;
+        audio.ontimeupdate = () => { const sc = document.querySelector('.story-scroll'); if (sc && audio.duration) { const max = sc.scrollHeight - sc.clientHeight; if (max > 0) sc.scrollTop = (audio.currentTime / audio.duration) * max; } };
+        audio.onended = () => { setSpeaking(false); URL.revokeObjectURL(url); };
+        audio.onerror = () => { setSpeaking(false); URL.revokeObjectURL(url); };
+        audio.play().catch(err => { console.error('voice play blocked:', err); setSpeaking(false); URL.revokeObjectURL(url); });
+      } else {
+        setSpeaking(false);
       }
     } catch (e) {
       console.error('ElevenLabs voice failed:', e);
+      setSpeaking(false);
     }
-    setSpeaking(false);
   };
 
   const saveStory = async () => {
