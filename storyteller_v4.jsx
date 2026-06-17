@@ -369,7 +369,7 @@ export default function App() {
         const audio = new Audio(url);
         window._ttsAudio = audio;
         audio.volume = 1.0;
-        audio.ontimeupdate = () => { const sc = document.querySelector('.story-scroll'); if (sc && audio.duration) { const max = sc.scrollHeight - sc.clientHeight; if (max > 0) sc.scrollTop = (audio.currentTime / audio.duration) * max; } };
+        audio.ontimeupdate = () => { const sc = document.querySelector('.story-scroll'); if (sc && audio.duration && audio.currentTime > 2) { const max = sc.scrollHeight - sc.clientHeight; const span = audio.duration - 2; if (max > 0 && span > 0) sc.scrollTop = ((audio.currentTime - 2) / span) * max; } };
         audio.onended = () => { setSpeaking(false); URL.revokeObjectURL(url); };
         audio.onerror = () => { setSpeaking(false); URL.revokeObjectURL(url); };
         audio.play().catch(err => { console.error('voice play blocked:', err); setSpeaking(false); URL.revokeObjectURL(url); });
