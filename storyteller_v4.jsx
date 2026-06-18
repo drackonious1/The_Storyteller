@@ -350,7 +350,7 @@ export default function App() {
       setSpeaking(false);
       return;
     }
-    const text = chunks.map(c => c.text).join(' ').substring(0, 2500);
+    const joined = chunks.map(c => c.text).join(' '); const text = joined.substring(0, 2500); const spokenFrac = Math.min(1, 2500 / Math.max(1, joined.length));
     setSpeaking(true);
     try {
       // Real ElevenLabs voice via the /api/story serverless function (key stays safe in Vercel, never in the client). No Puter, no popup.
@@ -369,7 +369,7 @@ export default function App() {
         const audio = new Audio(url);
         window._ttsAudio = audio;
         audio.volume = 1.0;
-        audio.ontimeupdate = () => { const sc = document.querySelector('.story-scroll'); if (sc && audio.duration && audio.currentTime > 4) { const max = sc.scrollHeight - sc.clientHeight; if (max > 0) { const p = audio.currentTime / audio.duration; sc.scrollTop = Math.max(0, Math.min(max, p * sc.scrollHeight - sc.clientHeight / 2)); } } };
+        audio.ontimeupdate = () => { const sc = document.querySelector('.story-scroll'); if (sc && audio.duration && audio.currentTime > 4) { const max = sc.scrollHeight - sc.clientHeight; if (max > 0) { const p = audio.currentTime / audio.duration; sc.scrollTop = Math.max(0, Math.min(max, p * spokenFrac * sc.scrollHeight - sc.clientHeight / 2)); } } };
         audio.onended = () => { setSpeaking(false); URL.revokeObjectURL(url); };
         audio.onerror = () => { setSpeaking(false); URL.revokeObjectURL(url); };
         audio.play().catch(err => { console.error('voice play blocked:', err); setSpeaking(false); URL.revokeObjectURL(url); });
