@@ -343,13 +343,29 @@ export default function App() {
 
   const logout = () => { setUser(null); setTier("free"); setStories([]); setUsedTotal(0); setUsedToday({ kids: 0, older: 0, family: 0 }); setScreen("splash"); setUname(""); setPwd(""); };
 
+  const stopVoice = () => {
+    if (window._ttsAudio) {
+      try {
+        window._ttsAudio.pause();
+        window._ttsAudio.onended = null;
+        window._ttsAudio.onerror = null;
+        window._ttsAudio.ontimeupdate = null;
+        window._ttsAudio.currentTime = 0;
+        if (window._ttsAudio.src && window._ttsAudio.src.indexOf('blob:') === 0) URL.revokeObjectURL(window._ttsAudio.src);
+        window._ttsAudio.src = '';
+      } catch (e) {}
+      window._ttsAudio = null;
+    }
+    setSpeaking(false);
+  };
+
   const speakStory = async () => {
     if (!chunks.length) return;
     if (speaking) {
-      if (window._ttsAudio) { try { window._ttsAudio.pause(); } catch (e) {} }
-      setSpeaking(false);
+      stopVoice();
       return;
     }
+    stopVoice();
     const joined = chunks.map(c => c.text).join(' '); const text = joined.substring(0, 2500); const spokenFrac = Math.min(1, 2500 / Math.max(1, joined.length));
     setSpeaking(true);
     try {
@@ -396,6 +412,7 @@ export default function App() {
   };
 
   const openStory = (s) => {
+    stopVoice();
     scrollModeRef.current = 'top';
     setActiveStory(s.id); setMode(s.mode || "older");
     setChunks(s.text.split("\n\n---\n\n").map((t, i) => ({ id: i, text: t })));
@@ -403,6 +420,7 @@ export default function App() {
   };
 
   const newStory = () => {
+    stopVoice();
     const a = allowance();
     if (!a.ok) { setScreen("limit"); return; }
     scrollModeRef.current = 'top';
@@ -410,6 +428,7 @@ export default function App() {
   };
 
   const callStory = async (isNew) => {
+    stopVoice();
     const a = allowance();
     if (!a.ok) { setScreen("limit"); return; }
     setLoading(true);
@@ -675,7 +694,7 @@ export default function App() {
               <button className={`voice-btn ${speaking ? "speaking" : ""}`} onClick={speakStory}>
                 {speaking ? "⏹ Stop" : "🔊 Listen"}
               </button>
-              <select className="voice-select" value={selectedVoice} onChange={e => setSelectedVoice(e.target.value)} disabled={speaking}>
+              <select className="voice-select" value={selectedVoice} onChange={e => { stopVoice(); setSelectedVoice(e.target.value); }}>
                 {VOICES.map(v => <option key={v.id} value={v.id}>{v.name}</option>)}
               </select>
             </div>
