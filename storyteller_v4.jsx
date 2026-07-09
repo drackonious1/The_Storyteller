@@ -206,16 +206,12 @@ export default function App() {
   const [promoCode, setPromoCode] = useState("");
   const [promoMsg, setPromoMsg] = useState("");
   const [promoErr, setPromoErr] = useState("");
-  // Voice choices: Aussie Edge TTS voices (free, no key, no limit)
+  // Voice choices: browser Aussie voices (free, unlimited, works in every browser)
   const VOICES = [
-    { id: 'natasha', name: 'Natasha (Aussie F)' },
-    { id: 'freya',   name: 'Freya (Aussie F)' },
-    { id: 'annette', name: 'Annette (Aussie F)' },
-    { id: 'william', name: 'William (Aussie M)' },
-    { id: 'darren',  name: 'Darren (Aussie M)' },
-    { id: 'ken',     name: 'Ken (Aussie M)' },
+    { id: 'female', name: 'Aussie Female' },
+    { id: 'male',   name: 'Aussie Male' },
   ];
-  const [selectedVoice, setSelectedVoice] = useState('natasha');
+  const [selectedVoice, setSelectedVoice] = useState('female');
   const [speaking, setSpeaking] = useState(false);
   const [voicePrep, setVoicePrep] = useState(false);
   const [muted, setMuted] = useState(false);
@@ -362,72 +358,94 @@ export default function App() {
       } catch (e) {}
       window._ttsAudio = null;
     }
+    window._ttsCancelled = true;
     try { window.speechSynthesis.cancel(); } catch (e) {}
     setSpeaking(false);
     setVoicePrep(false);
   };
 
-  // Fallback voice � best natural browser voice (only if the Aussie server voice cannot be reached)
-  const speakBrowser = (text) => {
-    try {
-      window.speechSynthesis.cancel();
-      const u = new SpeechSynthesisUtterance(text);
-      const list = window.speechSynthesis.getVoices();
-      let pick = list.find(v => v.lang === 'en-AU');
-      if (!pick) pick = list.find(v => v.name && /Australia|Aussie|Catherine|James/i.test(v.name));
-      if (!pick) pick = list.find(v => v.name && /Google UK English|Microsoft|Samantha|Daniel/i.test(v.name));
-      if (!pick) pick = list.find(v => v.lang && v.lang.startsWith('en'));
-      if (pick) u.voice = pick;
-      u.rate = 0.94; u.pitch = 1.0; u.volume = 1.0;
-      u.onend = () => setSpeaking(false);
-      u.onerror = () => setSpeaking(false);
-      window._ttsUtter = u;
-      window.speechSynthesis.speak(u);
-    } catch (e) { setSpeaking(false); }
+  // Pick the best en-AU browser voice for the chosen gender.
+  const pickAuVoice = (wantMale) => {
+    const list = window.speechSynthesis.getVoices() || [];
+    const femaleNames = /Natasha|Freya|Annette|Catherine|Hayley|Nicole|Olivia|Aria|Jenny|Zira|Karen|Samantha/i;
+    const maleNames   = /William|Darren|Ken|James|Russell|Guy|Liam|Daniel|Alex|David|Mark/i;
+    const au = list.filter(v => v.lang === 'en-AU' || /Australia/i.test(v.name));
+    let pick = null;
+    if (wantMale) {
+      pick = au.find(v => maleNames.test(v.name))
+          || au.find(v => /\bmale\b/i.test(v.name))
+          || au.find(v => !femaleNames.test(v.name))
+          || au[0]
+          || list.find(v => v.lang && v.lang.startsWith('en') && maleNames.test(v.name));
+    } else {
+      pick = au.find(v => femaleNames.test(v.name))
+          || au.find(v => /\bfemale\b/i.test(v.name))
+          || au.find(v => !maleNames.test(v.name))
+          || au[0]
+          || list.find(v => v.lang && v.lang.startsWith('en') && femaleNames.test(v.name));
+    }
+    if (!pick) pick = list.find(v => v.lang === 'en-AU') || list.find(v => v.lang && v.lang.startsWith('en')) || list[0] || null;
+    return pick;
   };
 
-  // Main voice � Aussie Edge TTS via /api/story (free, no key, no per-use limit, works with PC off)
-  const speakStory = async () => {
+  // Aussie voice via the browser's own speech engine - free, unlimited, works in every browser.
+  // Reads long stories in sentence groups so Chrome never cuts off mid-read.
+  const speakBrowser = (fullText) => {
+    try {
+      window._ttsCancelled = false;
+      window.speechSynthesis.cancel();
+      const wantMale = selectedVoice === 'male';
+      const pick = pickAuVoice(wantMale);
+
+      const sentences = String(fullText).split(/(?<=[.!?])\s+/);
+      const queue = [];
+      let buf = '';
+      for (const s of sentences) {
+        if ((buf + ' ' + s).length > 220) { if (buf.trim()) queue.push(buf.trim()); buf = s; }
+        else { buf = buf ? buf + ' ' + s : s; }
+      }
+      if (buf.trim()) queue.push(buf.trim());
+      if (!queue.length) queue.push(String(fullText));
+
+      const totalLen = fullText.length || 1;
+      let doneLen = 0;
+      let idx = 0;
+      const speakNext = () => {
+        if (window._ttsCancelled || idx >= queue.length) { setSpeaking(false); return; }
+        const part = queue[idx];
+        const u = new SpeechSynthesisUtterance(part);
+        if (pick) { u.voice = pick; u.lang = pick.lang || 'en-AU'; } else { u.lang = 'en-AU'; }
+        u.rate = 0.94; u.pitch = wantMale ? 0.9 : 1.03; u.volume = 1.0;
+        u.onstart = () => { setVoicePrep(false); setSpeaking(true); };
+        u.onboundary = (ev) => {
+          try {
+            const sc = document.querySelector('.story-scroll');
+            if (sc) {
+              const p = Math.min(1, (doneLen + (ev.charIndex || 0)) / totalLen);
+              const max = sc.scrollHeight - sc.clientHeight;
+              if (max > 0) sc.scrollTop = Math.max(0, Math.min(max, p * sc.scrollHeight - sc.clientHeight / 2));
+            }
+          } catch (e) {}
+        };
+        u.onend = () => { doneLen += part.length + 1; idx++; speakNext(); };
+        u.onerror = () => { doneLen += part.length + 1; idx++; speakNext(); };
+        window._ttsUtter = u;
+        window.speechSynthesis.speak(u);
+      };
+      setVoicePrep(false);
+      setSpeaking(true);
+      speakNext();
+    } catch (e) { setSpeaking(false); setVoicePrep(false); }
+  };
+
+  // Listen button - reads the current story aloud in the chosen Aussie voice.
+  const speakStory = () => {
     if (!chunks.length) return;
     if (speaking || voicePrep) { stopVoice(); return; }
     stopVoice();
     const joined = chunks.map(c => c.text).join(' ');
     const text = joined.substring(0, 5000);
-    setVoicePrep(true);
-    try {
-      const res = await fetch('/api/story', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'speak', text, voiceId: selectedVoice })
-      });
-      const data = await res.json();
-      if (data && data.audio) {
-        const byteChars = atob(data.audio);
-        const bytes = new Uint8Array(byteChars.length);
-        for (let i = 0; i < byteChars.length; i++) bytes[i] = byteChars.charCodeAt(i);
-        const blob = new Blob([bytes], { type: 'audio/mpeg' });
-        const url = URL.createObjectURL(blob);
-        const audio = new Audio(url);
-        window._ttsAudio = audio;
-        audio.volume = 1.0;
-        audio.ontimeupdate = () => { const sc = document.querySelector('.story-scroll'); if (sc && audio.duration && audio.currentTime > 4) { const max = sc.scrollHeight - sc.clientHeight; if (max > 0) { const p = audio.currentTime / audio.duration; sc.scrollTop = Math.max(0, Math.min(max, p * sc.scrollHeight - sc.clientHeight / 2)); } } };
-        audio.onended = () => { setSpeaking(false); URL.revokeObjectURL(url); };
-        audio.onerror = () => { setSpeaking(false); URL.revokeObjectURL(url); };
-        setVoicePrep(false);
-        setSpeaking(true);
-        audio.play().catch(() => { setSpeaking(false); URL.revokeObjectURL(url); });
-      } else {
-        // Server voice unavailable -> browser voice so the reader never gets silence
-        setVoicePrep(false);
-        setSpeaking(true);
-        speakBrowser(text);
-      }
-    } catch (e) {
-      console.warn('Aussie server voice unavailable, using browser voice:', e);
-      setVoicePrep(false);
-      setSpeaking(true);
-      speakBrowser(text);
-    }
+    speakBrowser(text);
   };
   const saveStory = async () => {
     if (!chunks.length || !user) return;
