@@ -462,13 +462,76 @@ export default function App() {
   };
 
   // Listen button - reads the current story aloud in the chosen Aussie voice.
+  // Real Australian voices (AWS Polly Russell/Olivia via Puter.js) - runs client-side so it
+  // never hits the datacenter-IP block that killed the old server-side Edge TTS approach.
+  // Falls back to the browser's built-in voices if Puter is unavailable for any reason.
+  const speakPuter = async (fullText, wantMale) => {
+    if (typeof puter === 'undefined' || !puter.ai || !puter.ai.txt2speech) {
+      speakBrowser(fullText);
+      return;
+    }
+    window._ttsCancelled = false;
+    setVoicePrep(true);
+
+    const sentences = String(fullText).split(/(?<=[.!?])\s+/);
+    const queue = [];
+    let buf = '';
+    for (const s of sentences) {
+      if ((buf + ' ' + s).length > 1200) { if (buf.trim()) queue.push(buf.trim()); buf = s; }
+      else { buf = buf ? buf + ' ' + s : s; }
+    }
+    if (buf.trim()) queue.push(buf.trim());
+    if (!queue.length) queue.push(String(fullText));
+
+    const totalLen = fullText.length || 1;
+    let doneLen = 0;
+    let idx = 0;
+
+    const playNext = async () => {
+      if (window._ttsCancelled || idx >= queue.length) { setSpeaking(false); return; }
+      const part = queue[idx];
+      try {
+        const audio = wantMale
+          ? await puter.ai.txt2speech(part, { voice: 'Russell', engine: 'standard', language: 'en-AU' })
+          : await puter.ai.txt2speech(part, { voice: 'Olivia', engine: 'neural', language: 'en-AU' });
+        if (window._ttsCancelled) return;
+        window._ttsAudio = audio;
+        audio.onplay = () => { setVoicePrep(false); setSpeaking(true); };
+        audio.ontimeupdate = () => {
+          try {
+            const sc = document.querySelector('.story-scroll');
+            if (sc && audio.duration) {
+              const partProgress = audio.currentTime / audio.duration;
+              const p = Math.min(1, (doneLen + partProgress * part.length) / totalLen);
+              const max = sc.scrollHeight - sc.clientHeight;
+              if (max > 0) sc.scrollTop = Math.max(0, Math.min(max, p * sc.scrollHeight - sc.clientHeight / 2));
+            }
+          } catch (e) {}
+        };
+        audio.onended = () => {
+          doneLen += part.length;
+          idx += 1;
+          playNext();
+        };
+        audio.onerror = () => { setVoicePrep(false); speakBrowser(fullText); };
+        audio.play();
+      } catch (e) {
+        // Puter failed mid-story (rare) - fall back to browser voices for the rest.
+        setVoicePrep(false);
+        speakBrowser(fullText);
+      }
+    };
+    playNext();
+  };
+
   const speakStory = () => {
     if (!chunks.length) return;
     if (speaking || voicePrep) { stopVoice(); return; }
     stopVoice();
     const joined = chunks.map(c => c.text).join(' ');
     const text = joined.substring(0, 5000);
-    speakBrowser(text);
+    const wantMale = selectedVoice === 'male';
+    speakPuter(text, wantMale);
   };
   const saveStory = async () => {
     if (!chunks.length || !user) return;
