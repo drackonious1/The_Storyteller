@@ -1,4 +1,4 @@
-﻿import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 
 const FIREFLIES = Array.from({ length: 22 }, (_, i) => ({
   id: i,
@@ -14,39 +14,39 @@ const MODES = {
   kids: {
     primary: "#FFB800", glow: "rgba(255,184,0,0.55)", subtle: "rgba(255,184,0,0.12)",
     text: "#FFE090", bg: "#2e1800", border: "rgba(255,184,0,0.4)",
-    teller: "The Gentle Dreamer", sub: "âœ¨ warm tales for young hearts âœ¨",
-    badge: "Young Hearts", btnLabel: "âœ¨  Begin the Adventure  âœ¨",
-    contLabel: "âœ¨  Continue the Adventure  âœ¨",
+    teller: "The Gentle Dreamer", sub: "✨ warm tales for young hearts ✨",
+    badge: "Young Hearts", btnLabel: "✨  Begin the Adventure  ✨",
+    contLabel: "✨  Continue the Adventure  ✨",
     orbA: "#FFD700", orbB: "#C87000", orbC: "#3A1F00",
     landingText: "The Gentle Dreamer is ready to take you on a wonderful, magical adventure...",
-    loadingText: "âœ¨ weaving your adventure... âœ¨",
+    loadingText: "✨ weaving your adventure... ✨",
   },
   older: {
     primary: "#7B2FFF", glow: "rgba(123,47,255,0.55)", subtle: "rgba(123,47,255,0.12)",
     text: "#D4B0FF", bg: "#1a0f35", border: "rgba(123,47,255,0.4)",
-    teller: "The Ancient Whisperer", sub: "âœ¦ tales from the edge of worlds âœ¦",
-    badge: "Mystic", btnLabel: "âœ¦  Awaken the Story  âœ¦",
-    contLabel: "âœ¦  Weave the Tale Further  âœ¦",
+    teller: "The Ancient Whisperer", sub: "✦ tales from the edge of worlds ✦",
+    badge: "Mystic", btnLabel: "✦  Awaken the Story  ✦",
+    contLabel: "✦  Weave the Tale Further  ✦",
     orbA: "#9a5cda", orbB: "#4a1590", orbC: "#160835",
     landingText: "An ancient voice stirs at the boundary of worlds, ready to share what it witnesses...",
-    loadingText: "âœ¦ the ancient voice stirs... âœ¦",
+    loadingText: "✦ the ancient voice stirs... ✦",
   },
   family: {
     primary: "#00D98B", glow: "rgba(0,217,139,0.55)", subtle: "rgba(0,217,139,0.12)",
     text: "#90FFD8", bg: "#0f2a1a", border: "rgba(0,217,139,0.4)",
-    teller: "The Hearthkeeper", sub: "ðŸŒ¿ stories of family, bond and belonging ðŸŒ¿",
-    badge: "Family", btnLabel: "ðŸŒ¿  Begin the Family Tale  ðŸŒ¿",
-    contLabel: "ðŸŒ¿  Continue the Journey  ðŸŒ¿",
+    teller: "The Hearthkeeper", sub: "🌿 stories of family, bond and belonging 🌿",
+    badge: "Family", btnLabel: "🌿  Begin the Family Tale  🌿",
+    contLabel: "🌿  Continue the Journey  🌿",
     orbA: "#00D98B", orbB: "#006644", orbC: "#001A0F",
     landingText: "The Hearthkeeper tends the fire of family stories, ready to weave a tale of belonging...",
-    loadingText: "ðŸŒ¿ the hearthkeeper weaves your tale... ðŸŒ¿",
+    loadingText: "🌿 the hearthkeeper weaves your tale... 🌿",
   },
 };
 
 const SYSTEMS = {
-  kids: `You are the Gentle Dreamer â€” a warm magical storyteller in a world filled with friendly creatures, sparkling forests, rainbow waterfalls, and incredible adventures. Your stories are joyful, wondrous, and completely safe. Characters are kind and brave. Adventures always end with warmth and hope. Use simple vivid language, 3 short paragraphs. End on an exciting moment that makes young hearts want more. Never scary, always gentle.`,
-  older: `You are the Ancient Whisperer â€” an immortal entity at the boundary of worlds. Your realm has moonlit forests breathing silver mist, crystal lakes reflecting futures, floating ruins humming with forgotten spells, storms that speak, creatures of impossible wonder. Tell stories as if living them. Rich, detailed, layered narrative â€” atmospheric, immersive, like a dream spoken aloud. 4 to 5 paragraphs, deep world-building, complex characters with real motivations. End on a moment of haunting beauty or intrigue. Never break character.`,
-  family: `You are the Hearthkeeper â€” an ancient storyteller who tends the eternal fire where all family stories are born. You tell mystical fantasy tales centred on family groups: parents and children, siblings, chosen families, clans, a grandmother and her grandchildren, a village raising a child, brothers on a quest. Themes of love, sacrifice, belonging, protecting those you cherish, finding your way home to each other. Your world is mystical and magical but grounded in the warmth of family bonds. 3 to 4 paragraphs. Real emotion, real stakes, real heart. End on a moment that celebrates the bond between the characters.`,
+  kids: `You are the Gentle Dreamer — a warm magical storyteller in a world filled with friendly creatures, sparkling forests, rainbow waterfalls, and incredible adventures. Your stories are joyful, wondrous, and completely safe. Characters are kind and brave. Adventures always end with warmth and hope. Use simple vivid language, 3 short paragraphs. End on an exciting moment that makes young hearts want more. Never scary, always gentle.`,
+  older: `You are the Ancient Whisperer — an immortal entity at the boundary of worlds. Your realm has moonlit forests breathing silver mist, crystal lakes reflecting futures, floating ruins humming with forgotten spells, storms that speak, creatures of impossible wonder. Tell stories as if living them. Rich, detailed, layered narrative — atmospheric, immersive, like a dream spoken aloud. 4 to 5 paragraphs, deep world-building, complex characters with real motivations. End on a moment of haunting beauty or intrigue. Never break character.`,
+  family: `You are the Hearthkeeper — an ancient storyteller who tends the eternal fire where all family stories are born. You tell mystical fantasy tales centred on family groups: parents and children, siblings, chosen families, clans, a grandmother and her grandchildren, a village raising a child, brothers on a quest. Themes of love, sacrifice, belonging, protecting those you cherish, finding your way home to each other. Your world is mystical and magical but grounded in the warmth of family bonds. 3 to 4 paragraphs. Real emotion, real stakes, real heart. End on a moment that celebrates the bond between the characters.`,
 };
 
 const TIERS = {
@@ -56,10 +56,10 @@ const TIERS = {
 };
 
 const PROMO_CODES = {
-  "DRACKO":    { tier: "full",     msg: "Welcome home, creator âœ¦ Full realm unlocked!" },
-  "DRACKO25":  { tier: "full",     msg: "Welcome home, creator âœ¦ Full realm unlocked!" },
-  "BETA10":    { tier: "standard", msg: "Beta access granted âœ¦ Standard unlocked!" },
-  "BETA25":    { tier: "full",     msg: "Beta access granted âœ¦ Full realm unlocked!" },
+  "DRACKO":    { tier: "full",     msg: "Welcome home, creator ✦ Full realm unlocked!" },
+  "DRACKO25":  { tier: "full",     msg: "Welcome home, creator ✦ Full realm unlocked!" },
+  "BETA10":    { tier: "standard", msg: "Beta access granted ✦ Standard unlocked!" },
+  "BETA25":    { tier: "full",     msg: "Beta access granted ✦ Full realm unlocked!" },
 };
 
 const TIER_PERKS = {
@@ -174,7 +174,7 @@ html, body { background: #05030d; min-height: 100vh; }
 .tier-price span { font-size: 11px; opacity: 0.5; }
 .tier-perks { list-style: none; display: flex; flex-direction: column; gap: 5px; margin-bottom: 12px; }
 .tier-perks li { font-size: 12px; color: var(--mt); opacity: 0.65; font-style: italic; }
-.tier-perks li::before { content: "âœ¦  "; color: var(--mp); }
+.tier-perks li::before { content: "✦  "; color: var(--mp); }
 .tier-tag { display: inline-block; font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; padding: 3px 8px; border-radius: 4px; background: var(--ms); color: var(--mp); border: 1px solid var(--border); margin-bottom: 8px; }
 .limit-screen { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px 24px; gap: 18px; text-align: center; position: relative; z-index: 1; }
 .limit-title { font-size: 17px; letter-spacing: 2px; color: var(--mp); text-transform: uppercase; text-shadow: 0 0 16px var(--mg); }
@@ -297,7 +297,7 @@ export default function App() {
     if (authTab === "signup") {
       if (ex) {
         if (ex.password === pwd) { setUser(u); await loadUsage(u); setScreen("home"); return; }
-        setAuthErr("That name exists â€” try the Login tab instead."); return;
+        setAuthErr("That name exists — try the Login tab instead."); return;
       }
       await storageSet(`user:${u}`, { password: pwd, tier: "free", createdAt: Date.now() });
       setAuthOk("Welcome to the realm!...");
@@ -367,7 +367,7 @@ export default function App() {
     setVoicePrep(false);
   };
 
-  // Fallback voice — best natural browser voice (only if the Aussie server voice cannot be reached)
+  // Fallback voice � best natural browser voice (only if the Aussie server voice cannot be reached)
   const speakBrowser = (text) => {
     try {
       window.speechSynthesis.cancel();
@@ -386,7 +386,7 @@ export default function App() {
     } catch (e) { setSpeaking(false); }
   };
 
-  // Main voice — Aussie Edge TTS via /api/story (free, no key, no per-use limit, works with PC off)
+  // Main voice � Aussie Edge TTS via /api/story (free, no key, no per-use limit, works with PC off)
   const speakStory = async () => {
     if (!chunks.length) return;
     if (speaking || voicePrep) { stopVoice(); return; }
@@ -439,7 +439,7 @@ export default function App() {
     const updated = [entry, ...all.filter(s => s.id !== entry.id)].slice(0, 20);
     await storageSet(`stories:${user}`, updated);
     setStories(updated); setActiveStory(entry.id);
-    setSaveMsg("Story saved âœ¦"); setTimeout(() => setSaveMsg(""), 2500);
+    setSaveMsg("Story saved ✦"); setTimeout(() => setSaveMsg(""), 2500);
   };
 
   const openStory = (s) => {
@@ -523,15 +523,15 @@ export default function App() {
       <div className="screen splash">
         <Orb size={84} />
         <div className="glow-title">The Storyteller</div>
-        <div className="glow-sub">âœ¦ mystical tales for all ages âœ¦</div>
+        <div className="glow-sub">✦ mystical tales for all ages ✦</div>
         <ModeSelector />
         <div className="splash-body">{m.landingText}</div>
         <div className="splash-actions">
-          <button className="btn-glow" onClick={() => { setAuthTab("signup"); setScreen("auth"); }}>âœ¦  Create Account</button>
+          <button className="btn-glow" onClick={() => { setAuthTab("signup"); setScreen("auth"); }}>✦  Create Account</button>
           <button className="btn-outline-glow" onClick={() => { setAuthTab("login"); setScreen("auth"); }}>Login</button>
-          <button className="btn-ghost" onClick={handleGuest}>Try free â€” no sign up needed</button>
+          <button className="btn-ghost" onClick={handleGuest}>Try free — no sign up needed</button>
         </div>
-        <div className="splash-note">3 free stories Â· No card needed</div>
+        <div className="splash-note">3 free stories · No card needed</div>
       </div>
     </div>
   );
@@ -541,9 +541,9 @@ export default function App() {
       <style>{css}</style>
       <Fireflies count={10} />
       <div className="screen auth-wrap">
-        <button className="btn-ghost" onClick={() => setScreen("splash")}>â† back</button>
+        <button className="btn-ghost" onClick={() => setScreen("splash")}>← back</button>
         <div style={{ textAlign: "center" }}><Orb size={56} /></div>
-        <div className="glow-title" style={{ textAlign: "center", fontSize: 16 }}>âœ¦ Join the Realm âœ¦</div>
+        <div className="glow-title" style={{ textAlign: "center", fontSize: 16 }}>✦ Join the Realm ✦</div>
         <div className="auth-tabs">
           <button className={`auth-tab ${authTab === "login" ? "active" : ""}`} onClick={() => { setAuthTab("login"); setAuthErr(""); setAuthOk(""); }}>Login</button>
           <button className={`auth-tab ${authTab === "signup" ? "active" : ""}`} onClick={() => { setAuthTab("signup"); setAuthErr(""); setAuthOk(""); }}>Sign Up</button>
@@ -564,11 +564,11 @@ export default function App() {
       <Fireflies count={8} />
       <div className="screen">
         <div className="hdr">
-          <div className="hdr-row"><button className="btn-ghost" onClick={() => setScreen(user ? "home" : "splash")}>â† back</button></div>
+          <div className="hdr-row"><button className="btn-ghost" onClick={() => setScreen(user ? "home" : "splash")}>← back</button></div>
           <div className="glow-title" style={{ fontSize: 16 }}>Choose Your Realm</div>
         </div>
         <div className="pricing-wrap">
-          <div style={{ fontSize: 12, fontStyle: "italic", color: "var(--mt)", opacity: 0.45, textAlign: "center", marginBottom: 18 }}>Unlimited tales await â€” pick what suits you</div>
+          <div style={{ fontSize: 12, fontStyle: "italic", color: "var(--mt)", opacity: 0.45, textAlign: "center", marginBottom: 18 }}>Unlimited tales await — pick what suits you</div>
           {Object.entries(TIERS).map(([key, t]) => {
             const isFeat = key === "full";
             return (
@@ -580,13 +580,13 @@ export default function App() {
                 </div>
                 <ul className="tier-perks">{TIER_PERKS[key].map((p, i) => <li key={i}>{p}</li>)}</ul>
                 {tier === key && user
-                  ? <div style={{ textAlign: "center", fontSize: 12, color: m.primary, fontStyle: "italic" }}>âœ¦ Your current plan</div>
+                  ? <div style={{ textAlign: "center", fontSize: 12, color: m.primary, fontStyle: "italic" }}>✦ Your current plan</div>
                   : key === "free"
                     ? <button className="btn-outline-glow" onClick={() => setScreen(user ? "home" : "splash")}>Continue Free</button>
                     : <button className="btn-glow" onClick={() => {
                         const url = key === 'standard' ? 'https://buy.stripe.com/aFa3cv2EsbSyghS2j5abK00' : 'https://buy.stripe.com/14AaEX3Iw6ye8Pq9LxabK01';
                         window.open(url, '_blank');
-                      }}>Subscribe â€” {t.price}{t.period}</button>
+                      }}>Subscribe — {t.price}{t.period}</button>
                 }
               </div>
             );
@@ -611,17 +611,17 @@ export default function App() {
       <style>{css}</style>
       <Fireflies count={8} />
       <div className="screen">
-        <div className="hdr"><div className="hdr-row"><button className="btn-ghost" onClick={() => setScreen(user ? "home" : "splash")}>â† back</button></div></div>
+        <div className="hdr"><div className="hdr-row"><button className="btn-ghost" onClick={() => setScreen(user ? "home" : "splash")}>← back</button></div></div>
         <div className="limit-screen">
           <Orb size={60} />
           <div className="limit-title">The Veil Closes</div>
           <div className="limit-body">
             {!user ? "You've used your 3 free stories. Create an account and subscribe to continue."
               : tier === "free" ? "You've reached your story limit. Upgrade to hear more tales."
-              : `Your ${TIERS[tier].stories} adventures for today are complete âœ¦ Rest well â€” your next tales arrive tomorrow, and the realm will be waiting! ðŸŒ™`}
+              : `Your ${TIERS[tier].stories} adventures for today are complete ✦ Rest well — your next tales arrive tomorrow, and the realm will be waiting! 🌙`}
           </div>
           {!user && <button className="btn-glow" onClick={() => { setAuthTab("signup"); setScreen("auth"); }}>Create Free Account</button>}
-          {(tier === "free" || !user) && <button className="btn-glow" onClick={() => setScreen("pricing")}>âœ¦ {user ? "Upgrade My Realm" : "See All Plans"}</button>}
+          {(tier === "free" || !user) && <button className="btn-glow" onClick={() => setScreen("pricing")}>✦ {user ? "Upgrade My Realm" : "See All Plans"}</button>}
           <button className="btn-ghost" onClick={() => setScreen(user ? "home" : "splash")}>Maybe later</button>
         </div>
       </div>
@@ -635,9 +635,9 @@ export default function App() {
       <div className="screen">
         <div className="hdr">
           <div className="hdr-row">
-            <div className="hdr-user">{user ? `âœ¦ ${user}` : "âœ¦ guest"}</div>
+            <div className="hdr-user">{user ? `✦ ${user}` : "✦ guest"}</div>
             <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-              <button className="mute-btn" onClick={() => setMuted(mu => !mu)}>{muted ? "ðŸ”‡" : "ðŸŽµ"}</button>
+              <button className="mute-btn" onClick={() => setMuted(mu => !mu)}>{muted ? "🔇" : "🎵"}</button>
               {user && <button className="btn-ghost" onClick={() => setScreen("pricing")} style={{ color: m.primary, opacity: 0.8, fontSize: 11 }}>{tier === "free" ? "Upgrade" : TIERS[tier].name}</button>}
               <button className="btn-ghost" onClick={user ? logout : () => setScreen("splash")}>{user ? "leave" : "home"}</button>
             </div>
@@ -652,8 +652,8 @@ export default function App() {
             <span className="usage-val">{a.label}</span>
           </div>
           <div className="usage-track"><div className="usage-fill" style={{ width: `${pct}%` }} /></div>
-          {a.rem === 0 && <div className="upgrade-nudge" onClick={() => setScreen("pricing")}>Upgrade for more â†’</div>}
-          {a.rem > 0 && tier !== "full" && user && <div className="upgrade-nudge" onClick={() => setScreen("pricing")}>Upgrade plan â†’</div>}
+          {a.rem === 0 && <div className="upgrade-nudge" onClick={() => setScreen("pricing")}>Upgrade for more →</div>}
+          {a.rem > 0 && tier !== "full" && user && <div className="upgrade-nudge" onClick={() => setScreen("pricing")}>Upgrade plan →</div>}
         </div>
         <div className="home-body">
           <button className="btn-glow" style={{ marginBottom: 16 }} onClick={newStory}>{m.btnLabel}</button>
@@ -676,7 +676,7 @@ export default function App() {
           ) : (
             <div className="empty">
               Sign up free to save your stories<br />and continue tales anytime.<br /><br />
-              <span style={{ cursor: "pointer", color: m.primary, textShadow: `0 0 8px ${m.glow}` }} onClick={() => setScreen("auth")}>Create account â†’</span>
+              <span style={{ cursor: "pointer", color: m.primary, textShadow: `0 0 8px ${m.glow}` }} onClick={() => setScreen("auth")}>Create account →</span>
             </div>
           )}
         </div>
@@ -691,7 +691,7 @@ export default function App() {
       <div className="screen">
         <div className="hdr">
           <div className="hdr-row">
-            <button className="btn-ghost" onClick={() => { setScreen(user ? "home" : "splash"); fadeInMusic(); }}>â† {user ? "my tales" : "home"}</button>
+            <button className="btn-ghost" onClick={() => { setScreen(user ? "home" : "splash"); fadeInMusic(); }}>← {user ? "my tales" : "home"}</button>
             <div className="badge" style={{ "--mp": m.primary, "--ms": m.subtle, "--border": m.border }}>{m.badge}</div>
           </div>
           <div className="glow-title" style={{ fontSize: 16 }}>{m.teller}</div>
@@ -708,7 +708,7 @@ export default function App() {
             <div className="story-inner">
               {chunks.map((chunk, i) => (
                 <div key={chunk.id}>
-                  {i > 0 && <div className="crystal-div">âœ¦  âœ¦  âœ¦</div>}
+                  {i > 0 && <div className="crystal-div">✦  ✦  ✦</div>}
                   <div className="chunk">
                     {chunk.text.split(/\n\n+/).filter(Boolean).map((p, j) => <p key={j} className="para">{p}</p>)}
                   </div>
@@ -723,12 +723,12 @@ export default function App() {
           {started && chunks.length > 0 && (
             <div className="voice-bar">
               <button className={`voice-btn ${speaking ? "speaking" : ""}`} onClick={speakStory} disabled={voicePrep}>
-                {voicePrep ? "âœ¦ preparing voice..." : speaking ? "â¹ Stop" : "ðŸ”Š Listen"}
+                {voicePrep ? "✦ preparing voice..." : speaking ? "⏹ Stop" : "🔊 Listen"}
               </button>
               <select className="voice-select" value={selectedVoice} onChange={e => { stopVoice(); setSelectedVoice(e.target.value); }}>
                 {VOICES.map(v => <option key={v.id} value={v.id}>{v.name}</option>)}
               </select>
-              {voicePrep && <div className="voice-note">First listen loads the voice once â€” after that it's instant.</div>}
+              {voicePrep && <div className="voice-note">First listen loads the voice once — after that it's instant.</div>}
             </div>
           )}
           {!started ? (
@@ -744,7 +744,7 @@ export default function App() {
                 <div className="btn-row">
                   {user && <button className="btn-sm" onClick={saveStory} disabled={loading}>Save</button>}
                   <button className="btn-sm" onClick={() => callStory(true)} disabled={loading}>New Story</button>
-                  <button className="btn-sm" onClick={() => { setScreen(user ? "home" : "splash"); fadeInMusic(); }}>â† Home</button>
+                  <button className="btn-sm" onClick={() => { setScreen(user ? "home" : "splash"); fadeInMusic(); }}>← Home</button>
                 </div>
               )}
             </>
