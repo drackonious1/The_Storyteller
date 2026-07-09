@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+﻿import { useState, useRef, useEffect } from "react";
 
 const FIREFLIES = Array.from({ length: 22 }, (_, i) => ({
   id: i,
@@ -212,6 +212,7 @@ export default function App() {
     { id: 'male',   name: 'Aussie Male' },
   ];
   const [selectedVoice, setSelectedVoice] = useState('female');
+  const [pitchAdj, setPitchAdj] = useState(0); // -0.4 to +0.4 on top of gender base pitch
   const [speaking, setSpeaking] = useState(false);
   const [voicePrep, setVoicePrep] = useState(false);
   const [muted, setMuted] = useState(false);
@@ -415,7 +416,7 @@ export default function App() {
         const part = queue[idx];
         const u = new SpeechSynthesisUtterance(part);
         if (pick) { u.voice = pick; u.lang = pick.lang || 'en-AU'; } else { u.lang = 'en-AU'; }
-        u.rate = 0.94; u.pitch = wantMale ? 0.9 : 1.03; u.volume = 1.0;
+        u.rate = 0.94; u.pitch = Math.max(0, Math.min(2, (wantMale ? 0.9 : 1.03) + pitchAdj)); u.volume = 1.0;
         u.onstart = () => { setVoicePrep(false); setSpeaking(true); };
         u.onboundary = (ev) => {
           try {
@@ -746,6 +747,12 @@ export default function App() {
               <select className="voice-select" value={selectedVoice} onChange={e => { stopVoice(); setSelectedVoice(e.target.value); }}>
                 {VOICES.map(v => <option key={v.id} value={v.id}>{v.name}</option>)}
               </select>
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <span style={{ fontSize: 10, color: "var(--mt)", opacity: 0.5 }}>Pitch</span>
+                <input type="range" min="-0.4" max="0.4" step="0.05" value={pitchAdj}
+                  onChange={e => { stopVoice(); setPitchAdj(parseFloat(e.target.value)); }}
+                  style={{ width: 80, accentColor: "var(--mp)" }} />
+              </div>
               {voicePrep && <div className="voice-note">First listen loads the voice once — after that it's instant.</div>}
             </div>
           )}
