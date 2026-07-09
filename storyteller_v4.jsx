@@ -364,10 +364,11 @@ export default function App() {
     setVoicePrep(false);
   };
 
-  // Pick the best en-AU browser voice for the chosen gender.
-  // Returns { voice, matchedGender } - matchedGender is false when we had to fall back
-  // to a voice whose gender we can't confirm (common on mobile with 1-2 voices total),
-  // so the caller can widen the pitch gap to keep male/female audibly different either way.
+  // Pick a browser voice for the chosen gender. Mobile pitch/rate tweaks are unreliable
+  // (many mobile TTS voices are "non-local"/cloud and silently ignore pitch changes), so
+  // instead of leaning on pitch we guarantee male vs female use two DIFFERENT underlying
+  // voice objects whenever the device has more than one voice at all - that difference in
+  // the actual voice engine is audible even when pitch is ignored.
   const pickAuVoice = (wantMale) => {
     const list = window.speechSynthesis.getVoices() || [];
     const femaleNames = /Natasha|Freya|Annette|Catherine|Hayley|Nicole|Olivia|Aria|Jenny|Zira|Karen|Samantha|female/i;
@@ -375,27 +376,31 @@ export default function App() {
     const au = list.filter(v => v.lang === 'en-AU' || /Australia/i.test(v.name));
     const en = list.filter(v => v.lang && v.lang.startsWith('en'));
     const wantNames = wantMale ? maleNames : femaleNames;
-    const otherNames = wantMale ? femaleNames : maleNames;
 
     // 1. Exact gender match within Australian voices.
     let pick = au.find(v => wantNames.test(v.name));
     if (pick) return { voice: pick, matchedGender: true };
 
-    // 2. Exact gender match in any English voice (still sounds correct, just not AU accent).
+    // 2. Exact gender match in any English voice.
     pick = en.find(v => wantNames.test(v.name));
     if (pick) return { voice: pick, matchedGender: true };
 
-    // 3. No gendered voices available at all - if there are 2+ AU voices, split them so
-    //    male/female at least pick DIFFERENT voices instead of both defaulting to au[0].
-    if (au.length > 1) {
-      const notOther = au.filter(v => !otherNames.test(v.name));
-      pick = wantMale ? notOther[notOther.length - 1] : notOther[0];
-      if (pick) return { voice: pick, matchedGender: false };
+    // 3. Exact gender match in ANY voice on the device, any language.
+    pick = list.find(v => wantNames.test(v.name));
+    if (pick) return { voice: pick, matchedGender: true };
+
+    // 4. No gender info anywhere - deterministically split whatever voices exist so
+    //    male/female always get two DIFFERENT voice objects (different engine = audibly
+    //    different) instead of both silently landing on the same one.
+    const pool = au.length > 1 ? au : (en.length > 1 ? en : list);
+    if (pool.length > 1) {
+      pick = wantMale ? pool[0] : pool[pool.length - 1];
+      return { voice: pick, matchedGender: false };
     }
 
-    // 4. Truly only one voice available on this device/browser - same voice either way,
-    //    caller must rely on pitch/rate to make male vs female audibly distinct.
-    pick = au[0] || en[0] || list[0] || null;
+    // 5. Genuinely only one voice exists on this whole device - nothing more we can do
+    //    to differentiate; pitch/rate are a last-ditch attempt only in this rare case.
+    pick = pool[0] || null;
     return { voice: pick, matchedGender: false };
   };
 
