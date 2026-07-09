@@ -71,7 +71,7 @@ const TIER_PERKS = {
 const css = `
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { background: #05030d; min-height: 100vh; }
-.app { background: var(--bg, #070412); min-height: 640px; max-width: 480px; margin: 0 auto; display: flex; flex-direction: column; border-radius: 18px; overflow: hidden; font-family: Georgia,'Book Antiqua',Palatino,serif; color: var(--mt, #C4A0FF); transition: background 0.6s ease; position: relative; }
+.app { background: var(--bg, #070412); height: 100vh; height: 100dvh; max-width: 480px; margin: 0 auto; display: flex; flex-direction: column; border-radius: 0; overflow: hidden; font-family: Georgia,'Book Antiqua',Palatino,serif; color: var(--mt, #C4A0FF); transition: background 0.6s ease; position: relative; }
 .app::before { content: ''; position: absolute; inset: -40%; z-index: 0; pointer-events: none; opacity: 0.12; filter: blur(45px); background: radial-gradient(38% 30% at 28% 24%, var(--mg) 0%, transparent 62%), radial-gradient(34% 26% at 74% 72%, var(--mg) 0%, transparent 62%); animation: auroradrift 28s ease-in-out infinite alternate; }
 @keyframes auroradrift { 0% { transform: translate(-4%, -3%) rotate(0deg) scale(1); } 50% { transform: translate(5%, 4%) rotate(7deg) scale(1.12); } 100% { transform: translate(-2%, 6%) rotate(-5deg) scale(1.06); } }
 .app-story { height: 100vh; height: 100dvh; min-height: 0; }
