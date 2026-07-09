@@ -365,27 +365,38 @@ export default function App() {
   };
 
   // Pick the best en-AU browser voice for the chosen gender.
+  // Returns { voice, matchedGender } - matchedGender is false when we had to fall back
+  // to a voice whose gender we can't confirm (common on mobile with 1-2 voices total),
+  // so the caller can widen the pitch gap to keep male/female audibly different either way.
   const pickAuVoice = (wantMale) => {
     const list = window.speechSynthesis.getVoices() || [];
-    const femaleNames = /Natasha|Freya|Annette|Catherine|Hayley|Nicole|Olivia|Aria|Jenny|Zira|Karen|Samantha/i;
-    const maleNames   = /William|Darren|Ken|James|Russell|Guy|Liam|Daniel|Alex|David|Mark/i;
+    const femaleNames = /Natasha|Freya|Annette|Catherine|Hayley|Nicole|Olivia|Aria|Jenny|Zira|Karen|Samantha|female/i;
+    const maleNames   = /William|Darren|Ken|James|Russell|Guy|Liam|Daniel|Alex|David|Mark|male/i;
     const au = list.filter(v => v.lang === 'en-AU' || /Australia/i.test(v.name));
-    let pick = null;
-    if (wantMale) {
-      pick = au.find(v => maleNames.test(v.name))
-          || au.find(v => /\bmale\b/i.test(v.name))
-          || au.find(v => !femaleNames.test(v.name))
-          || au[0]
-          || list.find(v => v.lang && v.lang.startsWith('en') && maleNames.test(v.name));
-    } else {
-      pick = au.find(v => femaleNames.test(v.name))
-          || au.find(v => /\bfemale\b/i.test(v.name))
-          || au.find(v => !maleNames.test(v.name))
-          || au[0]
-          || list.find(v => v.lang && v.lang.startsWith('en') && femaleNames.test(v.name));
+    const en = list.filter(v => v.lang && v.lang.startsWith('en'));
+    const wantNames = wantMale ? maleNames : femaleNames;
+    const otherNames = wantMale ? femaleNames : maleNames;
+
+    // 1. Exact gender match within Australian voices.
+    let pick = au.find(v => wantNames.test(v.name));
+    if (pick) return { voice: pick, matchedGender: true };
+
+    // 2. Exact gender match in any English voice (still sounds correct, just not AU accent).
+    pick = en.find(v => wantNames.test(v.name));
+    if (pick) return { voice: pick, matchedGender: true };
+
+    // 3. No gendered voices available at all - if there are 2+ AU voices, split them so
+    //    male/female at least pick DIFFERENT voices instead of both defaulting to au[0].
+    if (au.length > 1) {
+      const notOther = au.filter(v => !otherNames.test(v.name));
+      pick = wantMale ? notOther[notOther.length - 1] : notOther[0];
+      if (pick) return { voice: pick, matchedGender: false };
     }
-    if (!pick) pick = list.find(v => v.lang === 'en-AU') || list.find(v => v.lang && v.lang.startsWith('en')) || list[0] || null;
-    return pick;
+
+    // 4. Truly only one voice available on this device/browser - same voice either way,
+    //    caller must rely on pitch/rate to make male vs female audibly distinct.
+    pick = au[0] || en[0] || list[0] || null;
+    return { voice: pick, matchedGender: false };
   };
 
   // Aussie voice via the browser's own speech engine - free, unlimited, works in every browser.
@@ -395,7 +406,14 @@ export default function App() {
       window._ttsCancelled = false;
       window.speechSynthesis.cancel();
       const wantMale = selectedVoice === 'male';
-      const pick = pickAuVoice(wantMale);
+      const { voice: pick, matchedGender } = pickAuVoice(wantMale);
+      // If we couldn't confirm the picked voice is actually the right gender (e.g. only
+      // one voice available on this browser), push pitch/rate further apart so male and
+      // female are still audibly different instead of sounding identical.
+      const pitchMale = matchedGender ? 0.9 : 0.6;
+      const pitchFemale = matchedGender ? 1.03 : 1.5;
+      const rateMale = matchedGender ? 0.94 : 0.86;
+      const rateFemale = matchedGender ? 0.94 : 1.02;
 
       const sentences = String(fullText).split(/(?<=[.!?])\s+/);
       const queue = [];
@@ -415,7 +433,7 @@ export default function App() {
         const part = queue[idx];
         const u = new SpeechSynthesisUtterance(part);
         if (pick) { u.voice = pick; u.lang = pick.lang || 'en-AU'; } else { u.lang = 'en-AU'; }
-        u.rate = 0.94; u.pitch = wantMale ? 0.9 : 1.03; u.volume = 1.0;
+        u.rate = wantMale ? rateMale : rateFemale; u.pitch = wantMale ? pitchMale : pitchFemale; u.volume = 1.0;
         u.onstart = () => { setVoicePrep(false); setSpeaking(true); };
         u.onboundary = (ev) => {
           try {
