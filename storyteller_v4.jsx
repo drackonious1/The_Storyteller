@@ -171,6 +171,18 @@ html, body { background: #05030d; min-height: 100vh; }
 .save-msg { text-align: center; font-size: 11px; font-style: italic; color: #7FFFCF; letter-spacing: 1px; animation: fadein 0.4s ease; }
 .pricing-wrap { flex: 1; min-height: 0; overflow-y: auto; padding: 16px 18px; position: relative; z-index: 1; }
 .tier-card { border-radius: 14px; padding: 16px; margin-bottom: 12px; border: 1px solid var(--border); background: rgba(255,255,255,0.03); }
+    .pricing-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-content: start; }
+    .pricing-grid .tier-card { margin-bottom: 0; padding: 12px 11px; display: flex; flex-direction: column; }
+    .pricing-grid .tier-header { flex-direction: column; align-items: flex-start; gap: 1px; margin-bottom: 6px; }
+    .pricing-grid .tier-name { font-size: 12px; letter-spacing: 1.5px; }
+    .pricing-grid .tier-price { font-size: 17px; line-height: 1.1; }
+    .pricing-grid .tier-price span { font-size: 9px; }
+    .pricing-grid .tier-perks { gap: 3px; margin-bottom: 9px; flex: 1; }
+    .pricing-grid .tier-perks li { font-size: 10px; line-height: 1.35; }
+    .pricing-grid .tier-tag { font-size: 8px; padding: 2px 6px; margin-bottom: 5px; align-self: flex-start; }
+    .pricing-grid .btn-glow, .pricing-grid .btn-outline-glow { padding: 8px 6px; font-size: 10px; letter-spacing: 1px; margin-top: auto; }
+    .promo-card { border-radius: 14px; padding: 12px 11px; border: 1px solid var(--border); background: rgba(255,255,255,0.03); display: flex; flex-direction: column; }
+    .promo-card input { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 8px; padding: 8px 9px; color: var(--mt); font-family: Georgia,serif; font-size: 12px; outline: none; letter-spacing: 2px; margin-bottom: 7px; }
 .tier-card.featured { border-color: var(--mp); background: var(--ms); box-shadow: 0 0 20px var(--ms); }
 .tier-header { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 8px; }
 .tier-name { font-size: 14px; letter-spacing: 2px; text-transform: uppercase; color: var(--mp); }
@@ -725,7 +737,8 @@ export default function App() {
           <div className="glow-title" style={{ fontSize: 16 }}>Choose Your Realm</div>
         </div>
         <div className="pricing-wrap">
-          <div style={{ fontSize: 12, fontStyle: "italic", color: "var(--mt)", opacity: 0.45, textAlign: "center", marginBottom: 18 }}>Unlimited tales await — pick what suits you</div>
+          <div style={{ fontSize: 11, fontStyle: "italic", color: "var(--mt)", opacity: 0.45, textAlign: "center", marginBottom: 12 }}>Unlimited tales await — pick what suits you</div>
+          <div className="pricing-grid">
           {Object.entries(TIERS).map(([key, t]) => {
             const isFeat = key === "full";
             return (
@@ -748,15 +761,13 @@ export default function App() {
               </div>
             );
           })}
-          <div style={{ borderTop: `1px solid var(--border)`, paddingTop: 16, marginTop: 12 }}>
-            <div className="section-lbl" style={{ marginBottom: 10 }}>Have a promo or beta code?</div>
-            <div style={{ display: "flex", gap: 8 }}>
-              <input value={promoCode} onChange={e => setPromoCode(e.target.value.toUpperCase())} placeholder="Enter code..." onKeyDown={e => e.key === "Enter" && handlePromo()}
-                style={{ flex: 1, background: "rgba(255,255,255,0.05)", border: `1px solid var(--border)`, borderRadius: 8, padding: "10px 12px", color: "var(--mt)", fontFamily: "Georgia,serif", fontSize: 14, outline: "none", letterSpacing: 2 }} />
-              <button className="btn-glow" style={{ width: "auto", padding: "10px 16px", fontSize: 12 }} onClick={handlePromo}>Apply</button>
-            </div>
-            {promoErr && <div className="msg-err" style={{ marginTop: 8 }}>{promoErr}</div>}
-            {promoMsg && <div className="msg-ok" style={{ marginTop: 8 }}>{promoMsg}</div>}
+          <div className="promo-card">
+            <div className="section-lbl" style={{ marginBottom: 8, opacity: 0.45 }}>Promo / beta code</div>
+            <input value={promoCode} onChange={e => setPromoCode(e.target.value.toUpperCase())} placeholder="Enter code..." onKeyDown={e => e.key === "Enter" && handlePromo()} />
+            <button className="btn-glow" style={{ padding: "8px 6px", fontSize: 10, letterSpacing: 1, marginTop: "auto" }} onClick={handlePromo}>Apply</button>
+            {promoErr && <div className="msg-err" style={{ marginTop: 6, fontSize: 10 }}>{promoErr}</div>}
+            {promoMsg && <div className="msg-ok" style={{ marginTop: 6, fontSize: 10 }}>{promoMsg}</div>}
+          </div>
           </div>
         </div>
       </div>
