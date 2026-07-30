@@ -81,7 +81,7 @@ html, body { background: #05030d; min-height: 100vh; }
 .app-story { height: 100vh; height: 100dvh; min-height: 0; }
 .app-story .screen { min-height: 0; }
 .app-story .controls { flex-shrink: 0; }
-.screen { display: flex; flex-direction: column; flex: 1; animation: fadein 0.45s ease; }
+.screen { display: flex; flex-direction: column; flex: 1; min-height: 0; animation: fadein 0.45s ease; }
 @keyframes fadein { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
 .ff { position: absolute; border-radius: 50%; background: var(--mp, #7B2FFF); box-shadow: 0 0 6px 2px var(--mg, rgba(123,47,255,0.55)); animation: ffloat var(--fd) ease-in-out infinite var(--fdl), fftw var(--ftw) ease-in-out infinite; pointer-events: none; z-index: 0; }
 @keyframes fftw { 0%,100%{opacity:0.1} 40%{opacity:0.85} 60%{opacity:0.95} }
