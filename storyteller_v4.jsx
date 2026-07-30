@@ -1,4 +1,8 @@
 import { useState, useRef, useEffect } from "react";
+import {
+  supabase, fetchProfile, fetchTodayUsage, bumpUsage, redeemPromo,
+  fetchStories, upsertStory, guestCount, setGuestCount,
+} from "./supabaseClient.js";
 
 const FIREFLIES = Array.from({ length: 22 }, (_, i) => ({
   id: i,
@@ -193,6 +197,9 @@ export default function App() {
   const [authErr, setAuthErr] = useState("");
   const [authOk, setAuthOk] = useState("");
   const [user, setUser] = useState(null);
+  const [userId, setUserId] = useState(null);
+  const [email, setEmail] = useState("");
+  const [authBusy, setAuthBusy] = useState(false);
   const [tier, setTier] = useState("free");
   const [mode, setMode] = useState("older");
   const [stories, setStories] = useState([]);
@@ -220,6 +227,29 @@ export default function App() {
   const endRef = useRef(null);
   const speakingRef = useRef(false);
   const scrollModeRef = useRef('bottom');
+
+  // Restore an existing login when the page loads or is refreshed
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase.auth.getSession();
+      if (cancelled) return;
+      if (data && data.session) {
+        const uid = data.session.user.id;
+        setUserId(uid);
+        const profile = await fetchProfile(uid);
+        if (cancelled) return;
+        setUser((profile && profile.username) || data.session.user.email.split("@")[0]);
+        setTier((profile && profile.tier) || "free");
+        setUsedToday(await fetchTodayUsage(uid));
+        setStories(await fetchStories(uid));
+        setScreen("home");
+      } else {
+        setUsedTotal(guestCount());
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   useEffect(() => {
     const audio = new Audio('https://res.cloudinary.com/dyjvf7ezd/video/upload/App_backgroup_mwkxfb.m4a');
@@ -254,17 +284,12 @@ export default function App() {
   const m = MODES[mode];
   const cssVars = { "--mp": m.primary, "--mg": m.glow, "--ms": m.subtle, "--mt": m.text, "--bg": m.bg, "--border": m.border };
 
-  const loadUsage = async (u) => {
-    if (!u) { const g = await storageGet("guest_total") || 0; setUsedTotal(g); return; }
-    const profile = await storageGet(`user:${u}`) || {};
-    setTier(profile.tier || "free");
-    const today = todayKey();
-    setUsedToday({
-      kids:   await storageGet(`usage:${u}:${today}:kids`)   || 0,
-      older:  await storageGet(`usage:${u}:${today}:older`)  || 0,
-      family: await storageGet(`usage:${u}:${today}:family`) || 0,
-    });
-    setStories(await storageGet(`stories:${u}`) || []);
+  const loadUsage = async (uid) => {
+    if (!uid) { setUsedTotal(guestCount()); return; }
+    const profile = await fetchProfile(uid);
+    setTier((profile && profile.tier) || "free");
+    setUsedToday(await fetchTodayUsage(uid));
+    setStories(await fetchStories(uid));
   };
 
   const allowance = () => {
@@ -276,32 +301,60 @@ export default function App() {
   };
 
   const incUsage = async () => {
-    if (!user) { const n = usedTotal + 1; setUsedTotal(n); await storageSet("guest_total", n); }
+    if (!userId) { const n = usedTotal + 1; setUsedTotal(n); setGuestCount(n); }
     else {
       const n = (usedToday[mode] || 0) + 1;
       setUsedToday(prev => ({ ...prev, [mode]: n }));
-      await storageSet(`usage:${user}:${todayKey()}:${mode}`, n);
+      const server = await bumpUsage(mode);
+      if (typeof server === "number") setUsedToday(prev => ({ ...prev, [mode]: server }));
     }
+  };
+
+  const enterRealm = async (session) => {
+    const uid = session.user.id;
+    setUserId(uid);
+    const profile = await fetchProfile(uid);
+    setUser((profile && profile.username) || session.user.email.split("@")[0]);
+    setTier((profile && profile.tier) || "free");
+    setUsedToday(await fetchTodayUsage(uid));
+    setStories(await fetchStories(uid));
+    setScreen("home");
   };
 
   const handleAuth = async () => {
     setAuthErr(""); setAuthOk("");
+    const mail = email.trim().toLowerCase();
     const u = uname.trim().toLowerCase();
-    if (!u || !pwd) { setAuthErr("Please enter a name and password."); return; }
-    if (u.length < 3) { setAuthErr("Name must be at least 3 characters."); return; }
-    const ex = await storageGet(`user:${u}`);
-    if (authTab === "signup") {
-      if (ex) {
-        if (ex.password === pwd) { setUser(u); await loadUsage(u); setScreen("home"); return; }
-        setAuthErr("That name exists — try the Login tab instead."); return;
+    if (!mail || !pwd) { setAuthErr("Please enter your email and password."); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail)) { setAuthErr("That email does not look right."); return; }
+    if (pwd.length < 6) { setAuthErr("Password must be at least 6 characters."); return; }
+
+    setAuthBusy(true);
+    try {
+      if (authTab === "signup") {
+        if (!u || u.length < 3) { setAuthErr("Realm name must be at least 3 characters."); setAuthBusy(false); return; }
+        const { data, error } = await supabase.auth.signUp({
+          email: mail, password: pwd, options: { data: { username: u } },
+        });
+        if (error) {
+          setAuthErr(error.message.includes("already") ? "That email is already registered — try Login." : error.message);
+          setAuthBusy(false); return;
+        }
+        if (data.session) {
+          setAuthOk("Welcome to the realm!...");
+          setTimeout(() => enterRealm(data.session), 1100);
+        } else {
+          setAuthOk("Check your email to confirm your account, then log in.");
+        }
+      } else {
+        const { data, error } = await supabase.auth.signInWithPassword({ email: mail, password: pwd });
+        if (error) { setAuthErr("Incorrect email or password."); setAuthBusy(false); return; }
+        await enterRealm(data.session);
       }
-      await storageSet(`user:${u}`, { password: pwd, tier: "free", createdAt: Date.now() });
-      setAuthOk("Welcome to the realm!...");
-      setTimeout(async () => { setUser(u); await loadUsage(u); setScreen("home"); }, 1100);
-    } else {
-      if (!ex || ex.password !== pwd) { setAuthErr("Incorrect name or password."); return; }
-      setUser(u); await loadUsage(u); setScreen("home");
+    } catch (e) {
+      setAuthErr("Something went wrong. Please try again.");
     }
+    setAuthBusy(false);
   };
 
   const handleGuest = async () => { await loadUsage(null); setScreen("home"); };
@@ -310,17 +363,14 @@ export default function App() {
     setPromoMsg(""); setPromoErr("");
     const code = promoCode.trim().toUpperCase();
     if (!code) { setPromoErr("Enter a code first."); return; }
-    const found = PROMO_CODES[code];
-    if (!found) { setPromoErr("That code isn't valid. Try again!"); return; }
-    if (!user) { setPromoErr("Create an account first to use a promo code."); return; }
-    const profile = await storageGet(`user:${user}`) || {};
-    await storageSet(`user:${user}`, { ...profile, tier: found.tier });
-    await storageSet(`usage:${user}:${todayKey()}:kids`, 0);
-    await storageSet(`usage:${user}:${todayKey()}:older`, 0);
-    await storageSet(`usage:${user}:${todayKey()}:family`, 0);
-    setTier(found.tier);
+    if (!userId) { setPromoErr("Create an account first to use a promo code."); return; }
+    const newTier = await redeemPromo(code);
+    if (!newTier) { setPromoErr("That code isn't valid. Try again!"); return; }
+    setTier(newTier);
     setUsedToday({ kids: 0, older: 0, family: 0 });
-    setPromoMsg(found.msg);
+    setPromoMsg(newTier === "full"
+      ? "Welcome home, creator \u2726 Full realm unlocked!"
+      : "Access granted \u2726 Standard unlocked!");
     setPromoCode("");
     setTimeout(() => { setPromoMsg(""); setScreen("home"); }, 2000);
   };
@@ -343,7 +393,7 @@ export default function App() {
     }, 100);
   };
 
-  const logout = () => { setUser(null); setTier("free"); setStories([]); setUsedTotal(0); setUsedToday({ kids: 0, older: 0, family: 0 }); setScreen("splash"); setUname(""); setPwd(""); };
+  const logout = async () => { await supabase.auth.signOut(); setUser(null); setUserId(null); setTier("free"); setStories([]); setUsedTotal(guestCount()); setUsedToday({ kids: 0, older: 0, family: 0 }); setScreen("splash"); setUname(""); setPwd(""); setEmail(""); };
 
   const stopVoice = () => {
     if (window._ttsAudio) {
@@ -534,15 +584,15 @@ export default function App() {
     speakPuter(text, wantMale);
   };
   const saveStory = async () => {
-    if (!chunks.length || !user) return;
+    if (!chunks.length || !userId) return;
     const fullText = chunks.map(c => c.text).join("\n\n---\n\n");
     const preview = chunks[0].text.split("\n\n")[0].substring(0, 100);
     const title = chunks[0].text.split(" ").slice(0, 6).join(" ") + "...";
-    const entry = { id: activeStory || `s_${Date.now()}`, title, preview, text: fullText, mode, savedAt: Date.now() };
-    const all = await storageGet(`stories:${user}`) || [];
-    const updated = [entry, ...all.filter(s => s.id !== entry.id)].slice(0, 20);
-    await storageSet(`stories:${user}`, updated);
-    setStories(updated); setActiveStory(entry.id);
+    const entry = { id: activeStory, title, preview, text: fullText, mode, savedAt: Date.now() };
+    const newId = await upsertStory(userId, entry);
+    if (!newId) { setSaveMsg("Could not save \u2014 please try again"); setTimeout(() => setSaveMsg(""), 2500); return; }
+    setStories(await fetchStories(userId));
+    setActiveStory(newId);
     setSaveMsg("Story saved ✦"); setTimeout(() => setSaveMsg(""), 2500);
   };
 
@@ -652,11 +702,14 @@ export default function App() {
           <button className={`auth-tab ${authTab === "login" ? "active" : ""}`} onClick={() => { setAuthTab("login"); setAuthErr(""); setAuthOk(""); }}>Login</button>
           <button className={`auth-tab ${authTab === "signup" ? "active" : ""}`} onClick={() => { setAuthTab("signup"); setAuthErr(""); setAuthOk(""); }}>Sign Up</button>
         </div>
-        <div className="field"><label>Your Realm Name</label><input value={uname} onChange={e => setUname(e.target.value)} placeholder="e.g. shadowwalker" /></div>
-        <div className="field"><label>Secret Word</label><input type="password" value={pwd} onChange={e => setPwd(e.target.value)} placeholder="your password" onKeyDown={e => e.key === "Enter" && handleAuth()} /></div>
+        {authTab === "signup" && (
+          <div className="field"><label>Your Realm Name</label><input value={uname} onChange={e => setUname(e.target.value)} placeholder="e.g. shadowwalker" /></div>
+        )}
+        <div className="field"><label>Email</label><input type="email" autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" /></div>
+        <div className="field"><label>Secret Word</label><input type="password" autoComplete={authTab === "signup" ? "new-password" : "current-password"} value={pwd} onChange={e => setPwd(e.target.value)} placeholder="at least 6 characters" onKeyDown={e => e.key === "Enter" && !authBusy && handleAuth()} /></div>
         {authErr && <div className="msg-err">{authErr}</div>}
         {authOk  && <div className="msg-ok">{authOk}</div>}
-        <button className="btn-glow" onClick={handleAuth}>{authTab === "login" ? "Enter the Realm" : "Begin My Journey"}</button>
+        <button className="btn-glow" disabled={authBusy} onClick={handleAuth}>{authBusy ? "One moment..." : (authTab === "login" ? "Enter the Realm" : "Begin My Journey")}</button>
         <button className="btn-ghost" style={{ textAlign: "center" }} onClick={handleGuest}>Continue as guest (3 free stories)</button>
       </div>
     </div>
