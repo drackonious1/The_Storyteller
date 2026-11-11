@@ -593,7 +593,8 @@ export default function App() {
     const joined = chunks.map(c => c.text).join(' ');
     const text = joined.substring(0, 5000);
     const wantMale = selectedVoice === 'male';
-    speakPuter(text, wantMale);
+    // Puter now forces every listener to sign in to a Puter account, so read with the device's own voice instead.
+    speakBrowser(text);
   };
   const saveStory = async () => {
     if (!chunks.length || !userId) return;
@@ -697,7 +698,7 @@ export default function App() {
           <button className="btn-outline-glow" onClick={() => { setAuthTab("login"); setScreen("auth"); }}>Login</button>
           <button className="btn-ghost" onClick={handleGuest}>Try free — no sign up needed</button>
         </div>
-        <div className="splash-note">3 free stories · No card needed</div>
+        <div className="splash-note">Try 3 stories free, then subscribe for more</div>
       </div>
     </div>
   );
@@ -754,7 +755,8 @@ export default function App() {
                   : key === "free"
                     ? <button className="btn-outline-glow" onClick={() => setScreen(user ? "home" : "splash")}>Continue Free</button>
                     : <button className="btn-glow" onClick={() => {
-                        const url = key === 'standard' ? 'https://buy.stripe.com/aFa3cv2EsbSyghS2j5abK00' : 'https://buy.stripe.com/14AaEX3Iw6ye8Pq9LxabK01';
+                        const base = key === 'standard' ? 'https://buy.stripe.com/aFa3cv2EsbSyghS2j5abK00' : 'https://buy.stripe.com/14AaEX3Iw6ye8Pq9LxabK01';
+                        const url = email ? base + '?prefilled_email=' + encodeURIComponent(email) : base;
                         window.open(url, '_blank');
                       }}>Subscribe — {t.price}{t.period}</button>
                 }
